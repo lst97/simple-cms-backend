@@ -1,0 +1,14 @@
+port: 1168
+host: localhost
+protocol: http
+apiVersion: v1
+apiEndpoint: /api
+database:
+    connectionString: mongodb://localhost:27017/simple-cms
+certificates:
+    privateKey: /etc/letsencrypt/live/lst97.tplinkdns.com/privkey.pem
+    certificate: /etc/letsencrypt/live/lst97.tplinkdns.com/cert.pem
+    ca: /etc/letsencrypt/live/lst97.tplinkdns.com/chain.pem
+appIdentifier:
+    name: simple_cms
+environment: development
