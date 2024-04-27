@@ -1,4 +1,7 @@
-import { Collection } from '../../../models/Collection';
+import { Collection } from '../../../models/share/collection/Collection';
+import { User } from '../../../models/database/User';
+import { ClientSession, ObjectId } from 'mongodb';
+import { CollectionAttribute } from '../../../models/share/collection/CollectionAttributes';
 
 // Recommended Methods for ICollectionRepository Interface
 // Based on the Collection class you provided, here are some recommended methods to include in your ICollectionRepository interface:
@@ -30,11 +33,16 @@ import { Collection } from '../../../models/Collection';
 
 export interface ICollectionRepository {
 	create(collection: Collection): Promise<Collection>;
+	findBySlug(slug: string): Promise<Collection | null>;
 	findById(id: string): Promise<Collection | null>;
-	findByUserId(userId: string): Promise<Collection[]>;
+	findByUsername(username: string): Promise<Collection[]>;
 	update(
 		id: string,
 		updateData: Partial<Collection>
+	): Promise<Collection | null>;
+	updateAttributesContent(
+		id: ObjectId,
+		updateData: Partial<CollectionAttribute[]>
 	): Promise<Collection | null>;
 	delete(id: string): Promise<boolean>;
 	findAll(): Promise<Collection[]>;

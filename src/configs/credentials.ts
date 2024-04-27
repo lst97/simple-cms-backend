@@ -1,5 +1,5 @@
 import fs from 'fs';
-import appConfig from './config';
+import appConfig from './Config';
 
 class Credentials {
 	public readonly tls = {

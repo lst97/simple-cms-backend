@@ -9,7 +9,8 @@ export interface IAppConfig {
 	apiVersion: string;
 	apiEndpoint: string;
 	database: {
-		connectionString: string;
+		mongodbConnectionString: string;
+		sqlite3ConnectionString: string;
 	};
 	certificates: {
 		privateKey: string;
@@ -29,7 +30,8 @@ class AppConfig implements IAppConfig {
 	apiVersion: string;
 	apiEndpoint: string;
 	database: {
-		connectionString: string;
+		mongodbConnectionString: string;
+		sqlite3ConnectionString: string;
 	};
 	certificates: {
 		privateKey: string;

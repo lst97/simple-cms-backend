@@ -1,12 +1,15 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
-import { CollectionAttribute } from './share/collection/CollectionAttributes';
-import { CollectionForm } from './share/collection/CollectionForm';
-import { GeneratorsUtil } from '../utils/Generators';
+import { CollectionAttribute } from './CollectionAttributes';
+import { CollectionForm } from '../../forms/CollectionForm';
+import { GeneratorsUtil } from '../../../utils/Generators';
+import { ObjectId } from 'mongodb';
 
 export class Collection {
-	// TODO: make to true when user is implemented
 	@prop({ required: false })
-	userId!: string;
+	_id?: ObjectId;
+
+	@prop({ required: true })
+	username!: string;
 
 	@prop({
 		required: true
@@ -28,10 +31,9 @@ export class Collection {
 	@prop({ default: Date.now })
 	updatedAt!: Date;
 
-	constructor(form?: CollectionForm) {
+	constructor(username: string, form?: CollectionForm) {
 		if (form) {
-			// should get from jwt
-			// this.userId = form.userId;
+			this.username = username;
 			this.collectionName = form.collectionName;
 			this.description = form.info?.description;
 			this.slug = GeneratorsUtil.generateUrlSlug(this.collectionName);

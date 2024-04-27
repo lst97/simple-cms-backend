@@ -1,12 +1,12 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-export class TextContent {
+export class BaseContent {
 	@prop({ required: false })
-	public content?: string;
+	public value?: string;
 
 	constructor(content?: string) {
-		this.content = content;
+		this.value = content;
 	}
 }
 
-export const TextContentModel = getModelForClass(TextContent);
+export const BaseContentModel = getModelForClass(BaseContent);

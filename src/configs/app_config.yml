@@ -4,7 +4,8 @@ protocol: http
 apiVersion: v1
 apiEndpoint: /api
 database:
-    connectionString: mongodb://localhost:27017/simple-cms
+    mongodbConnectionString: mongodb://localhost:27017/simple-cms
+    sqlite3ConnectionString: ./database/simple-cms.db
 certificates:
     privateKey: /etc/letsencrypt/live/lst97.tplinkdns.com/privkey.pem
     certificate: /etc/letsencrypt/live/lst97.tplinkdns.com/cert.pem

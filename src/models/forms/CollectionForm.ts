@@ -1,7 +1,7 @@
 import CollectionBaseSchema, {
 	CollectionInfo
-} from '../../../schemas/collection/CollectionBaseSchema';
-import { CollectionAttribute } from './CollectionAttributes';
+} from '../../schemas/collection/CollectionBaseSchema';
+import { CollectionAttribute } from '../share/collection/CollectionAttributes';
 
 export class CollectionForm implements CollectionBaseSchema {
 	kind: 'collection' = 'collection';

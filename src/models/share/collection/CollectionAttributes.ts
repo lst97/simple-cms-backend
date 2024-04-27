@@ -1,14 +1,14 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
-import { TextContent } from './AttributeContents';
-import { TypeSetting } from './AttributeTypeSettings';
+import { BaseContent } from './AttributeContents';
+import { AttributeSettingTypes } from './AttributeTypeSettings';
 
 export class CollectionAttribute {
 	@prop({ required: true })
-	public setting: TypeSetting;
+	public setting: AttributeSettingTypes;
 	@prop({ required: true })
-	public content: TextContent;
+	public content: BaseContent;
 
-	constructor(setting: TypeSetting, content: TextContent) {
+	constructor(setting: AttributeSettingTypes, content: BaseContent) {
 		this.setting = setting;
 		this.content = content;
 	}

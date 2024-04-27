@@ -3,13 +3,14 @@ import 'reflect-metadata';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import appConfig, { IAppConfig } from './configs/config';
-import Credentials from './configs/credentials';
+import appConfig, { IAppConfig } from './configs/Config';
+import Credentials from './configs/Credentials';
 import https from 'https';
 import { Config as CommonResponseConfig } from '@lst97/common_response';
 import {
 	IRequestHeaderMiddlewareService,
 	IResponseLoggerMiddlewareService,
+	JwtMiddlewareService,
 	RequestHeaderMiddlewareConfig,
 	RequestHeaderMiddlewareService,
 	RequestLoggerMiddlewareService,
@@ -17,8 +18,14 @@ import {
 } from '@lst97/express-common-middlewares';
 import { injectable } from 'inversify';
 import container from './inversify.config';
-import CollectionRoutes, { ICollectionRoutes } from './routes/CollectionRoutes';
-
+import CollectionRoutes from './routes/CollectionRoutes';
+import { ServerInvalidEnvConfigError } from '@lst97/common-errors';
+import * as dotenv from 'dotenv';
+import path from 'path';
+import IBaseRoutes from './routes/IBaseRoutes';
+import AuthenticateRoutes from './routes/AuthenticateRoutes';
+import UserRoutes from './routes/UserRoutes';
+import PassportConfig from './configs/Passport.config';
 @injectable()
 class App {
 	private app: express.Application;
@@ -40,6 +47,14 @@ class App {
 	}
 
 	private config(): void {
+		dotenv.config({ path: path.dirname(__dirname) + '/.env' });
+
+		if (!process.env.ACCESS_TOKEN_SECRET) {
+			throw new ServerInvalidEnvConfigError({
+				message: 'ACCESS_TOKEN_SECRET is not set in .env file.'
+			});
+		}
+
 		CommonResponseConfig.instance.idIdentifier =
 			appConfig.appIdentifier.name;
 		CommonResponseConfig.instance.requestIdName = 'requestId';
@@ -51,11 +66,14 @@ class App {
 		this.app.use(helmet());
 		this.app.use(cors());
 		this.app.use(express.json());
+		this.app.use(PassportConfig.instance.init());
+
 		this.app.use(
 			container.get<IRequestHeaderMiddlewareService>(
 				RequestHeaderMiddlewareService
 			).requestId
 		);
+
 		this.app.use(
 			container.get<RequestLoggerMiddlewareService>(
 				RequestLoggerMiddlewareService
@@ -71,7 +89,17 @@ class App {
 	private routes(): void {
 		this.app.use(
 			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
-			container.get<ICollectionRoutes>(CollectionRoutes).routers
+			container.get<IBaseRoutes>(CollectionRoutes).routers
+		);
+
+		this.app.use(
+			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			container.get<IBaseRoutes>(AuthenticateRoutes).routers
+		);
+
+		this.app.use(
+			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			container.get<IBaseRoutes>(UserRoutes).routers
 		);
 	}
 

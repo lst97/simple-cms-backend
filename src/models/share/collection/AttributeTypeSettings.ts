@@ -104,8 +104,8 @@ export class TextTypeSetting extends TypeSetting {
 		super();
 		this.type = TextSchema.type;
 		this._textType = TextSchema.textType;
-		this.maxLength = TextSchema.maxLength;
-		this.minLength = TextSchema.minLength;
+		this._maxLength = TextSchema.maxLength;
+		this._minLength = TextSchema.minLength;
 	}
 
 	public get textType(): TextContentTypes {

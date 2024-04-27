@@ -4,6 +4,7 @@
 		"letsencrypt",
 		"maxlength",
 		"pino",
-		"tplinkdns"
+		"tplinkdns",
+		"uuidv"
 	]
 }
