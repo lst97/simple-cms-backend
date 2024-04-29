@@ -43,9 +43,26 @@ class CollectionRoutes implements IBaseRoutes {
 		);
 
 		this.router.get(
+			'/:username/collections/:prefix',
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.getCollectionsByPrefixAndUsername(
+					req,
+					res
+				);
+			}
+		);
+
+		this.router.get(
+			'/collections/:prefix/:slug',
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.getCollections(req, res);
+			}
+		);
+
+		this.router.get(
 			'/collections/:slug',
 			(req: express.Request, res: express.Response) => {
-				this.collectionController.getAttributes(req, res);
+				this.collectionController.getCollectionBySlug(req, res);
 			}
 		);
 

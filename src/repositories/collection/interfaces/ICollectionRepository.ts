@@ -47,4 +47,5 @@ export interface ICollectionRepository {
 	delete(id: string): Promise<boolean>;
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
+	findBySlugs(slugs: string[]): Promise<Collection[]>;
 }

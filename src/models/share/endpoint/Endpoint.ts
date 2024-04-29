@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-export type SupportedPrefixes = '/collections';
+export type SupportedPrefixes = 'resources' | 'projects';
 
 export interface CollectionEndpointParams {
 	slug: string;
@@ -37,7 +37,7 @@ export class CollectionEndpoint {
 	username: string;
 
 	@prop({ required: true })
-	prefix: string = '/collections';
+	prefix: string = 'resources';
 
 	@prop({ required: true, unique: true })
 	slug: string;

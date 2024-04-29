@@ -12,6 +12,14 @@ export interface IEndpointRepository {
 	findCollectionEndpointBySlug(
 		slug: string
 	): Promise<CollectionEndpoint | null>;
+	findCollectionEndpointsByUsername(
+		username: string
+	): Promise<CollectionEndpoint[] | null>;
+	findCollectionEndpointsByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility: 'public' | 'private'
+	): Promise<CollectionEndpoint[] | null>;
 }
 @injectable()
 class EndpointRepository {
@@ -21,9 +29,7 @@ class EndpointRepository {
 		endpoint: CollectionEndpoint
 	): Promise<CollectionEndpoint> {
 		try {
-			return await new CollectionEndpointModel(
-				endpoint as CollectionEndpoint
-			).save();
+			return CollectionEndpointModel.create(endpoint);
 		} catch (error) {
 			if (error instanceof Error)
 				throw new DocumentCreationError({
@@ -38,6 +44,24 @@ class EndpointRepository {
 		slug: string
 	): Promise<CollectionEndpoint | null> {
 		return CollectionEndpointModel.findOne({ slug });
+	}
+
+	async findCollectionEndpointsByUsername(
+		username: string
+	): Promise<CollectionEndpoint[] | null> {
+		return CollectionEndpointModel.find({ username });
+	}
+
+	async findCollectionEndpointsByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility = 'public'
+	): Promise<CollectionEndpoint[] | null> {
+		return CollectionEndpointModel.find({
+			username: username,
+			prefix: prefix,
+			visibility: visibility
+		}).exec();
 	}
 }
 

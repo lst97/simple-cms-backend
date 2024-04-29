@@ -18,7 +18,7 @@ class CollectionRepository implements ICollectionRepository {
 	constructor() {}
 	async create(collection: Collection): Promise<Collection> {
 		try {
-			return await new CollectionModel(collection).save();
+			return CollectionModel.create(collection);
 		} catch (error) {
 			if (error instanceof Error)
 				throw new DocumentCreationError({
@@ -28,6 +28,13 @@ class CollectionRepository implements ICollectionRepository {
 			else throw error;
 		}
 	}
+
+	async findBySlugs(slugs: string[]): Promise<Collection[]> {
+		return CollectionModel.find({
+			slug: { $in: slugs }
+		});
+	}
+
 	async findBySlug(slug: string): Promise<Collection | null> {
 		return CollectionModel.findOne({ slug });
 	}

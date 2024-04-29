@@ -5,7 +5,7 @@ import { GeneratorsUtil } from '../../../utils/Generators';
 import { ObjectId } from 'mongodb';
 
 export class Collection {
-	@prop({ required: false })
+	@prop({ required: false, default: new ObjectId() })
 	_id?: ObjectId;
 
 	@prop({ required: true })

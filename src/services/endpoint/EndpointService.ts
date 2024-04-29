@@ -15,6 +15,12 @@ export interface IEndpointService {
 		slug: string
 	): Promise<IEndpoint | null>;
 	findEndpointBySlug(slug: string): Promise<IEndpoint | null>;
+	findEndpointsByUsername(username: string): Promise<IEndpoint[] | null>;
+	findSlugsByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility?: 'public' | 'private'
+	): Promise<string[] | null>;
 }
 
 @injectable()
@@ -30,7 +36,7 @@ class EndpointService {
 		slug: string
 	): Promise<IEndpoint | null> {
 		switch (prefix) {
-			case '/collections':
+			case 'resources':
 				return await this.endpointRepository.createCollectionEndpoint(
 					new CollectionEndpoint(username, {
 						slug: slug,
@@ -39,11 +45,37 @@ class EndpointService {
 						visibility: 'public'
 					})
 				);
+			default:
+				return null;
 		}
 	}
 
 	public async findEndpointBySlug(slug: string): Promise<IEndpoint | null> {
 		return await this.endpointRepository.findCollectionEndpointBySlug(slug);
+	}
+
+	public async findEndpointsByUsername(
+		username: string
+	): Promise<IEndpoint[] | null> {
+		return await this.endpointRepository.findCollectionEndpointsByUsername(
+			username
+		);
+	}
+
+	public async findSlugsByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility: 'public' | 'private' = 'public'
+	): Promise<string[] | null> {
+		return (
+			(
+				await this.endpointRepository.findCollectionEndpointsByPrefixAndUsername(
+					username,
+					prefix,
+					visibility
+				)
+			)?.map((endpoint) => endpoint.slug) ?? null
+		);
 	}
 }
 

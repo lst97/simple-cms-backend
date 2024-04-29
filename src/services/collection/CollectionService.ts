@@ -32,6 +32,11 @@ export interface ICollectionService {
 	delete(id: string): Promise<boolean>;
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
+	findByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility?: 'public' | 'private'
+	): Promise<Collection[]>;
 }
 @injectable()
 class CollectionService implements ICollectionService {
@@ -53,7 +58,7 @@ class CollectionService implements ICollectionService {
 		if (
 			(await this.endpointService.createEndpoint(
 				user.username,
-				'/collections',
+				'resources',
 				newCollection.slug
 			)) === null
 		) {
@@ -73,6 +78,30 @@ class CollectionService implements ICollectionService {
 
 	async findByUsername(username: string): Promise<Collection[]> {
 		return await this.collectionRepository.findByUsername(username);
+	}
+
+	private async findCollectionsBySlugs(
+		slugs: string[],
+		visibility: 'public' | 'private' = 'public'
+	): Promise<Collection[]> {
+		return await this.collectionRepository.findBySlugs(slugs);
+	}
+
+	async findByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility: 'public' | 'private' = 'public'
+	): Promise<Collection[]> {
+		const slugs = await this.endpointService.findSlugsByPrefixAndUsername(
+			username,
+			prefix
+		);
+
+		if (slugs === null) {
+			return [];
+		}
+
+		return await this.findCollectionsBySlugs(slugs, visibility);
 	}
 
 	async update(
