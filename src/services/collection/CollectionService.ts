@@ -11,7 +11,24 @@ import {
 	ServerResourceNotFoundError
 } from '@lst97/common-errors';
 import { ErrorHandlerService } from '@lst97/common_response';
+import { BaseContent } from '../../models/share/collection/AttributeContents';
+import {
+	CodeTypeSetting,
+	TextTypeSetting,
+	TypeSetting
+} from '../../models/share/collection/AttributeTypeSettings';
+import { ObjectId } from 'mongodb';
 
+export interface UpdateCollectionDataProps {
+	updateAttributesContent?: BaseContent[];
+	updateAttributesSetting?: TypeSetting[];
+	updateCollectionInfo?: Partial<Collection>;
+}
+
+interface UpdateAttributeDataProps {
+	updateAttributeContent?: BaseContent;
+	updateAttributeSetting?: TypeSetting;
+}
 export interface ICollectionService {
 	create(
 		collectionData: CollectionForm,
@@ -25,17 +42,45 @@ export interface ICollectionService {
 		slug: string,
 		updateData: Partial<CollectionAttribute[]>
 	): Promise<Collection | null>;
+	updateAttribute(
+		username: string,
+		slug: string,
+		attributeId: string,
+		{
+			updateAttributeContent,
+			updateAttributeSetting
+		}: UpdateAttributeDataProps
+	): Promise<Collection | null>;
+
 	update(
 		id: string,
 		updateData: Partial<Collection>
 	): Promise<Collection | null>;
+	updateBySlug(
+		username: string,
+		slug: string,
+		updateData: UpdateCollectionDataProps
+	): Promise<Collection | null>;
 	delete(id: string): Promise<boolean>;
+	deleteAttribute(
+		username: string,
+		slug: string,
+		attributeId: string
+	): Promise<Collection | null>;
+	addAttribute(
+		username: string,
+		slug: string,
+		setting: TypeSetting,
+		content: BaseContent
+	): Promise<Collection | null>;
+
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
 	findByPrefixAndUsername(
 		username: string,
 		prefix: string,
-		visibility?: 'public' | 'private'
+		visibility?: 'public' | 'private',
+		isAttributeIncluded?: boolean
 	): Promise<Collection[]>;
 }
 @injectable()
@@ -49,80 +94,18 @@ class CollectionService implements ICollectionService {
 		private errorHandlerService: ErrorHandlerService
 	) {}
 
-	async create(form: CollectionForm, user: User): Promise<Collection | null> {
-		// TODO: implement transaction
-		const newCollection = await this.collectionRepository.create(
-			new Collection(user.username, form)
-		);
-
-		if (
-			(await this.endpointService.createEndpoint(
-				user.username,
-				'resources',
-				newCollection.slug
-			)) === null
-		) {
-			return null;
-		}
-
-		return newCollection;
-	}
-	async findBySlug(slug: string): Promise<Collection | null> {
-		const collection = await this.collectionRepository.findBySlug(slug);
-		return collection;
-	}
-	async findById(id: string): Promise<Collection | null> {
-		const collection = await this.collectionRepository.findById(id);
-		return collection;
-	}
-
-	async findByUsername(username: string): Promise<Collection[]> {
-		return await this.collectionRepository.findByUsername(username);
-	}
-
-	private async findCollectionsBySlugs(
-		slugs: string[],
-		visibility: 'public' | 'private' = 'public'
-	): Promise<Collection[]> {
-		return await this.collectionRepository.findBySlugs(slugs);
-	}
-
-	async findByPrefixAndUsername(
-		username: string,
-		prefix: string,
-		visibility: 'public' | 'private' = 'public'
-	): Promise<Collection[]> {
-		const slugs = await this.endpointService.findSlugsByPrefixAndUsername(
-			username,
-			prefix
-		);
-
-		if (slugs === null) {
-			return [];
-		}
-
-		return await this.findCollectionsBySlugs(slugs, visibility);
-	}
-
-	async update(
-		id: string,
-		updateData: Partial<Collection>
-	): Promise<Collection | null> {
-		const updatedCollection = await this.collectionRepository.update(
-			id,
-			updateData
-		);
-		return updatedCollection;
-	}
-
-	async updateAttributesContent(
-		username: string,
-		slug: string,
-		updateData: Partial<CollectionAttribute[]>
-	): Promise<Collection | null> {
-		// check if the user have the permission to update the collection
-		const collection = await this.collectionRepository.findBySlug(slug);
-
+	/**
+	 * Validates the access to a collection.
+	 *
+	 * @param collection - The collection to validate access for.
+	 * @param username - The username of the user requesting access.
+	 * @throws {ServerResourceNotFoundError} If the collection is not found.
+	 * @throws {AuthInvalidCredentialsError} If the user is not allowed to update the collection.
+	 */
+	private validateCollectionAccess(
+		collection: Collection | null,
+		username: string
+	) {
 		if (collection === null || collection._id === undefined) {
 			const resourceNotFoundError = new ServerResourceNotFoundError(
 				'Collection not found'
@@ -144,10 +127,237 @@ class CollectionService implements ICollectionService {
 			});
 			throw invalidCredentialError;
 		}
+	}
+
+	async create(form: CollectionForm, user: User): Promise<Collection | null> {
+		// TODO: implement transaction
+		const newCollection = await this.collectionRepository.create(
+			new Collection(user.username, form)
+		);
+
+		if (
+			(await this.endpointService.createEndpoint(
+				user.username,
+				'resources',
+				newCollection.slug
+			)) === null
+		) {
+			return null;
+		}
+
+		return newCollection;
+	}
+
+	async addAttribute(
+		username: string,
+		slug: string,
+		setting: TypeSetting,
+		content: BaseContent
+	): Promise<Collection | null> {
+		// original collection
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
+
+		const updatedCollection = await this.collectionRepository.addAttribute(
+			collection!._id!,
+			new CollectionAttribute(setting, content)
+		);
+
+		return updatedCollection;
+	}
+
+	async updateAttribute(
+		username: string,
+		slug: string,
+		attributeId: string,
+		{
+			updateAttributeContent,
+			updateAttributeSetting
+		}: UpdateAttributeDataProps
+	): Promise<Collection | null> {
+		// original collection
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
+
+		let updatedAttribute = collection!.attributes.find(
+			(attribute) => attribute._id.toHexString() === attributeId
+		);
+
+		if (updatedAttribute === undefined) {
+			const resourceNotFoundError = new ServerResourceNotFoundError(
+				'Attribute not found'
+			);
+			this.errorHandlerService.handleError({
+				error: resourceNotFoundError,
+				service: CollectionService.name
+			});
+			throw resourceNotFoundError;
+		}
+
+		updatedAttribute.setting =
+			updateAttributeSetting ?? updatedAttribute.setting;
+		updatedAttribute.content =
+			updateAttributeContent ?? updatedAttribute.content;
+
+		const updatedCollection =
+			await this.collectionRepository.updateAttributeById(
+				collection!._id!,
+				updatedAttribute
+			);
+
+		return updatedCollection;
+	}
+	async findBySlug(slug: string): Promise<Collection | null> {
+		const collection = await this.collectionRepository.findBySlug(slug);
+		return collection;
+	}
+	async findById(id: string): Promise<Collection | null> {
+		const collection = await this.collectionRepository.findById(id);
+		return collection;
+	}
+
+	async findByUsername(username: string): Promise<Collection[]> {
+		return await this.collectionRepository.findByUsername(username);
+	}
+
+	private async findCollectionsBySlugs(
+		slugs: string[],
+		visibility: 'public' | 'private' = 'public',
+		isAttributeIncluded = false
+	): Promise<Collection[]> {
+		if (isAttributeIncluded) {
+			return await this.collectionRepository.findBySlugs(slugs);
+		} else {
+			return await this.collectionRepository.findInfoBySlugs(slugs);
+		}
+	}
+
+	async findByPrefixAndUsername(
+		username: string,
+		prefix: string,
+		visibility: 'public' | 'private' = 'public',
+		isAttributeIncluded = false
+	): Promise<Collection[]> {
+		const slugs = await this.endpointService.findSlugsByPrefixAndUsername(
+			username,
+			prefix
+		);
+
+		if (slugs === null) {
+			return [];
+		}
+
+		return await this.findCollectionsBySlugs(
+			slugs,
+			visibility,
+			isAttributeIncluded
+		);
+	}
+
+	async updateBySlug(
+		username: string,
+		slug: string,
+		{
+			updateAttributesContent,
+			updateAttributesSetting,
+			updateCollectionInfo
+		}: UpdateCollectionDataProps
+	): Promise<Collection | null> {
+		// original collection
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
+
+		// update collection info
+		let updatedCollection = collection;
+		if (updateCollectionInfo) {
+			updatedCollection = {
+				...updatedCollection!,
+				...updateCollectionInfo,
+				updatedAt: new Date()
+			};
+		}
+		if (updateAttributesContent) {
+			for (const content of updateAttributesContent) {
+				const attribute = updatedCollection!.attributes.find(
+					(attribute) => attribute.content._id === content._id
+				);
+				if (attribute) {
+					attribute.content = content;
+				}
+			}
+		}
+		if (updateAttributesSetting) {
+			for (const setting of updateAttributesSetting) {
+				const attribute = updatedCollection!.attributes.find(
+					(attribute) =>
+						(attribute.setting as TypeSetting)._id === setting._id
+				);
+				if (attribute) {
+					// TODO: support change to other type
+					switch ((attribute.setting as TypeSetting).type) {
+						case 'text':
+							(attribute.setting as TextTypeSetting) =
+								setting as TextTypeSetting;
+							break;
+						case 'code':
+							(attribute.setting as CodeTypeSetting) =
+								setting as CodeTypeSetting;
+					}
+				}
+			}
+		}
+
+		return await this.collectionRepository.update(
+			collection!._id!,
+			updatedCollection!
+		);
+	}
+
+	async deleteAttribute(
+		username: string,
+		slug: string,
+		attributeId: string
+	): Promise<Collection | null> {
+		// original collection
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
+
+		const updatedCollection =
+			await this.collectionRepository.deleteAttribute(
+				collection!._id!,
+				new ObjectId(attributeId)
+			);
+		return updatedCollection;
+	}
+
+	async update(
+		id: string,
+		updateData: Partial<Collection>
+	): Promise<Collection | null> {
+		const updatedCollection = await this.collectionRepository.update(
+			new ObjectId(id),
+			updateData
+		);
+		return updatedCollection;
+	}
+
+	async updateAttributesContent(
+		username: string,
+		slug: string,
+		updateData: Partial<CollectionAttribute[]>
+	): Promise<Collection | null> {
+		// check if the user have the permission to update the collection
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
 
 		const updatedCollection =
 			await this.collectionRepository.updateAttributesContent(
-				collection._id,
+				collection!._id!,
 				updateData
 			);
 		return updatedCollection;

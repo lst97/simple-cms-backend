@@ -19,16 +19,18 @@ import { User } from '../../models/database/User';
 import EndpointService, {
 	IEndpointService
 } from '../../services/endpoint/EndpointService';
-import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
+import { BaseContent } from '../../models/share/collection/AttributeContents';
+import { TypeSetting } from '../../models/share/collection/AttributeTypeSettings';
+import { Collection } from '../../models/share/collection/Collection';
 
 export interface ICollectionController {
 	createCollection(req: Request, res: Response): Promise<void>;
 	getCollections(req: Request, res: Response): Promise<void>;
-	getAttributes(req: Request, res: Response): Promise<void>;
-	updateCollectionAttributesContent(
-		req: Request,
-		res: Response
-	): Promise<void>;
+	getCollectionAttributes(req: Request, res: Response): Promise<void>;
+	updateCollection(req: Request, res: Response): Promise<void>;
+	updateCollectionAttribute(req: Request, res: Response): Promise<void>;
+	deleteCollectionAttribute(req: Request, res: Response): Promise<void>;
+	addCollectionAttribute(req: Request, res: Response): Promise<void>;
 	getCollectionsByPrefixAndUsername(
 		req: Request,
 		res: Response
@@ -109,20 +111,163 @@ class CollectionController implements ICollectionController {
 		}
 	}
 
-	public async updateCollectionAttributesContent(
+	public async deleteCollectionAttribute(
 		req: Request,
 		res: Response
 	): Promise<void> {
 		const slug = req.params.slug as string;
-		const updateCollectionAttributes = req.body as CollectionAttribute[];
+		const attributeId = req.params.id as string;
+		const username = (req.user as User).username;
 
 		try {
 			const collectionModel =
-				await this.collectionService.updateAttributesContent(
-					(req.user as User).username,
+				await this.collectionService.deleteAttribute(
+					username,
 					slug,
-					updateCollectionAttributes
+					attributeId
 				);
+			const commonResponse = this.responseService.buildSuccessResponse(
+				collectionModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async addCollectionAttribute(
+		req: Request,
+		res: Response
+	): Promise<void> {
+		const slug = req.params.slug;
+		const user = req.user as User;
+
+		const newAttributeContent = req.body.content as BaseContent;
+		const newAttributeSetting = req.body.setting as TypeSetting;
+
+		try {
+			const collectionModel = await this.collectionService.addAttribute(
+				user.username,
+				slug,
+				newAttributeSetting,
+				newAttributeContent
+			);
+			const commonResponse = this.responseService.buildSuccessResponse(
+				collectionModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async updateCollectionAttribute(
+		req: Request,
+		res: Response
+	): Promise<void> {
+		const slug = req.params.slug as string;
+		const attributeId = req.params.id as string;
+		const user = req.user as User;
+
+		let updateAttributeContent: BaseContent | undefined = undefined;
+		let updateAttributeSetting: TypeSetting | undefined = undefined;
+
+		if (req.query.content === 'true') {
+			updateAttributeContent = req.body.content as BaseContent;
+		}
+		if (req.query.setting === 'true') {
+			updateAttributeSetting = req.body.setting as TypeSetting;
+		}
+
+		try {
+			const collectionModel =
+				await this.collectionService.updateAttribute(
+					user.username,
+					slug,
+					attributeId,
+					{
+						updateAttributeContent: updateAttributeContent,
+						updateAttributeSetting: updateAttributeSetting
+					}
+				);
+			const commonResponse = this.responseService.buildSuccessResponse(
+				collectionModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async updateCollection(req: Request, res: Response): Promise<void> {
+		const slug = req.params.slug as string;
+
+		let updateCollectionAttributesContent: BaseContent[] = [];
+		let updateCollectionAttributesSettings: TypeSetting[] = [];
+		let updateCollectionInfo: Partial<Collection> = {};
+
+		if (req.body.content === 'true') {
+			updateCollectionAttributesContent = req.body as BaseContent[];
+		}
+		if (req.body.settings === 'true') {
+			updateCollectionAttributesSettings = req.body as TypeSetting[];
+		}
+		if (req.body.info === 'true') {
+			updateCollectionInfo = req.body as Partial<Collection>;
+		}
+
+		try {
+			const collectionModel = await this.collectionService.updateBySlug(
+				(req.user as User).username,
+				slug,
+				{
+					updateAttributesContent: updateCollectionAttributesContent,
+					updateAttributesSetting: updateCollectionAttributesSettings,
+					updateCollectionInfo: updateCollectionInfo
+				}
+			);
 			const commonResponse = this.responseService.buildSuccessResponse(
 				collectionModel,
 				req.headers.requestId as string
@@ -181,6 +326,22 @@ class CollectionController implements ICollectionController {
 		const prefix = req.params.prefix as string;
 		const username = req.params.username as string;
 
+		// need to check query schema
+		const includeAttributes = req.query.attributes as string | undefined;
+		// should replaced by schema
+		if (
+			includeAttributes !== undefined &&
+			includeAttributes !== 'true' &&
+			includeAttributes !== 'false'
+		) {
+			const commonResponse = this.responseService.buildErrorResponse(
+				new Error('Invalid query schema'),
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+			return;
+		}
+
 		try {
 			let visibility: 'public' | 'private' = 'public';
 
@@ -193,7 +354,8 @@ class CollectionController implements ICollectionController {
 				await this.collectionService.findByPrefixAndUsername(
 					username,
 					prefix,
-					visibility
+					visibility,
+					includeAttributes === 'true'
 				);
 
 			const commonResponse = this.responseService.buildSuccessResponse(
@@ -219,7 +381,10 @@ class CollectionController implements ICollectionController {
 		}
 	}
 
-	public async getAttributes(req: Request, res: Response): Promise<void> {
+	public async getCollectionAttributes(
+		req: Request,
+		res: Response
+	): Promise<void> {
 		const slug = req.params.slug as string;
 
 		const endpoint = await this.endpointService.findEndpointBySlug(slug);

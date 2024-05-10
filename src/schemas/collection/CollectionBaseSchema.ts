@@ -1,5 +1,3 @@
-import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
-
 // For the "info" section
 export interface CollectionInfo {
 	displayName: string;
@@ -28,13 +26,3 @@ export type SupportedAttributeTypes =
 	| 'number'
 	| 'boolean'
 	| 'dynamic';
-
-// For the main structure
-interface CollectionBaseSchema {
-	kind: 'collection';
-	collectionName?: string;
-	info?: CollectionInfo;
-	attributes?: CollectionAttribute[];
-}
-
-export default CollectionBaseSchema;

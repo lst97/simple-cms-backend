@@ -22,6 +22,7 @@ class CollectionRoutes implements IBaseRoutes {
 	}
 
 	public configureRoutes(): void {
+		// For CMS frontend
 		this.router.post(
 			'/collections',
 			passport.authenticate('jwt', {
@@ -42,6 +43,56 @@ class CollectionRoutes implements IBaseRoutes {
 			}
 		);
 
+		// can update settings or attributes or collection
+		this.router.put(
+			'/collections/:slug',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.updateCollection(req, res);
+			}
+		);
+
+		this.router.post(
+			'/collections/:slug/attribute',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.addCollectionAttribute(req, res);
+			}
+		);
+
+		/**
+		 * Update one attribute of a collection.
+		 *
+		 * @param {string} id - The id of the attribute.
+		 * @param {string} slug - The slug of the collection.
+		 * @query {setting} boolean - Indicates to update the setting of the attribute.
+		 * @query {content} boolean - Indicates to update the attribute content.
+		 */
+		this.router.put(
+			'/collections/:slug/attributes/:id',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.updateCollectionAttribute(req, res);
+			}
+		);
+
+		this.router.delete(
+			'/collections/:slug/attributes/:id',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.deleteCollectionAttribute(req, res);
+			}
+		);
+
+		// Public accessible routes.
 		this.router.get(
 			'/:username/collections/:prefix',
 			(req: express.Request, res: express.Response) => {
@@ -52,30 +103,17 @@ class CollectionRoutes implements IBaseRoutes {
 			}
 		);
 
-		this.router.get(
-			'/collections/:prefix/:slug',
-			(req: express.Request, res: express.Response) => {
-				this.collectionController.getCollections(req, res);
-			}
-		);
+		// this.router.get(
+		// 	'/collections/:prefix/:slug',
+		// 	(req: express.Request, res: express.Response) => {
+		// 		this.collectionController.getCollections(req, res);
+		// 	}
+		// );
 
 		this.router.get(
 			'/collections/:slug',
 			(req: express.Request, res: express.Response) => {
 				this.collectionController.getCollectionBySlug(req, res);
-			}
-		);
-
-		this.router.put(
-			'/collections/:slug',
-			passport.authenticate('jwt', {
-				session: false
-			}),
-			(req: express.Request, res: express.Response) => {
-				this.collectionController.updateCollectionAttributesContent(
-					req,
-					res
-				);
 			}
 		);
 	}

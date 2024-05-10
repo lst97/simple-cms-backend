@@ -10,7 +10,6 @@ import { Config as CommonResponseConfig } from '@lst97/common_response';
 import {
 	IRequestHeaderMiddlewareService,
 	IResponseLoggerMiddlewareService,
-	JwtMiddlewareService,
 	RequestHeaderMiddlewareConfig,
 	RequestHeaderMiddlewareService,
 	RequestLoggerMiddlewareService,

@@ -29,6 +29,84 @@ class CollectionRepository implements ICollectionRepository {
 		}
 	}
 
+	async findInfoBySlugs(slugs: string[]): Promise<Collection[]> {
+		return CollectionModel.find(
+			{ slug: { $in: slugs } },
+			{ attributes: 0 }
+		);
+	}
+
+	async updateAttributeById(
+		id: ObjectId,
+		attribute: CollectionAttribute
+	): Promise<Collection | null> {
+		try {
+			const updatedCollection = await CollectionModel.findOneAndUpdate(
+				{ _id: id }, // Filter the document by ID
+				[
+					{
+						$set: {
+							// Update the specific attribute within the array
+							attributes: {
+								$map: {
+									input: '$attributes', // Iterate over the existing attributes array
+									as: 'attribute',
+									in: {
+										// Conditionally update based on _id
+										$cond: {
+											if: {
+												$eq: [
+													'$$attribute._id',
+													attribute._id
+												]
+											}, // Replace attributeId with the actual ID
+											then: { ...attribute }, // New attribute data
+											else: '$$attribute' // Keep the original attribute
+										}
+									}
+								}
+							}
+						}
+					}
+				],
+				{ new: true } // Return the updated document
+			);
+
+			return updatedCollection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentUpdateError({
+					message: error.message,
+					cause: error
+				});
+			} else {
+				throw error; // Rethrow the unknown error
+			}
+		}
+	}
+
+	async addAttribute(
+		id: ObjectId,
+		attribute: CollectionAttribute
+	): Promise<Collection | null> {
+		try {
+			const updatedCollection = await CollectionModel.findByIdAndUpdate(
+				id,
+				{ $push: { attributes: attribute } },
+				{ new: true }
+			);
+			return updatedCollection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentUpdateError({
+					message: error.message,
+					cause: error
+				});
+			} else {
+				throw error; // Rethrow the unknown error
+			}
+		}
+	}
 	async findBySlugs(slugs: string[]): Promise<Collection[]> {
 		return CollectionModel.find({
 			slug: { $in: slugs }
@@ -44,8 +122,8 @@ class CollectionRepository implements ICollectionRepository {
 	findByUsername(username: string): Promise<Collection[]> {
 		return CollectionModel.find({ username });
 	}
-	update(
-		id: string,
+	async update(
+		id: ObjectId,
 		updateData: Partial<Collection>
 	): Promise<Collection | null> {
 		return new Promise((resolve, reject) => {
@@ -66,6 +144,29 @@ class CollectionRepository implements ICollectionRepository {
 				}
 			);
 		});
+	}
+
+	async deleteAttribute(
+		id: ObjectId,
+		attributeId: ObjectId
+	): Promise<Collection | null> {
+		try {
+			const updatedCollection = await CollectionModel.findByIdAndUpdate(
+				id,
+				{ $pull: { attributes: { _id: attributeId } } },
+				{ new: true }
+			);
+			return updatedCollection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentUpdateError({
+					message: error.message,
+					cause: error
+				});
+			} else {
+				throw error; // Rethrow the unknown error
+			}
+		}
 	}
 
 	async updateAttributesContent(

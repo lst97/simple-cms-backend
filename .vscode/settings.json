@@ -6,5 +6,9 @@
 		"pino",
 		"tplinkdns",
 		"uuidv"
-	]
+	],
+	"sonarlint.connectedMode.project": {
+		"connectionId": "lst97",
+		"projectKey": "lst97_simple-cms-backend"
+	}
 }

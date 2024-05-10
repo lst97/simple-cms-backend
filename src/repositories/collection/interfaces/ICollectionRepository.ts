@@ -33,11 +33,15 @@ import { CollectionAttribute } from '../../../models/share/collection/Collection
 
 export interface ICollectionRepository {
 	create(collection: Collection): Promise<Collection>;
+	updateAttributeById(
+		id: ObjectId,
+		attribute: CollectionAttribute
+	): Promise<Collection | null>;
 	findBySlug(slug: string): Promise<Collection | null>;
 	findById(id: string): Promise<Collection | null>;
 	findByUsername(username: string): Promise<Collection[]>;
 	update(
-		id: string,
+		id: ObjectId,
 		updateData: Partial<Collection>
 	): Promise<Collection | null>;
 	updateAttributesContent(
@@ -48,4 +52,13 @@ export interface ICollectionRepository {
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
 	findBySlugs(slugs: string[]): Promise<Collection[]>;
+	findInfoBySlugs(slug: string[]): Promise<Collection[]>;
+	addAttribute(
+		id: ObjectId,
+		attribute: CollectionAttribute
+	): Promise<Collection | null>;
+	deleteAttribute(
+		id: ObjectId,
+		attributeId: ObjectId
+	): Promise<Collection | null>;
 }

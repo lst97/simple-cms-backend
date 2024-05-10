@@ -34,8 +34,8 @@ export class Collection {
 	constructor(username: string, form?: CollectionForm) {
 		if (form) {
 			this.username = username;
-			this.collectionName = form.collectionName;
-			this.description = form.info?.description;
+			this.collectionName = form.info.name;
+			this.description = form.info.description;
 			this.slug = GeneratorsUtil.generateUrlSlug(this.collectionName);
 			this.attributes.push(...form.attributes);
 		}

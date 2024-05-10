@@ -15,6 +15,8 @@ import {
 	TextContentTypes,
 	CodeLanguageTypes
 } from '../../../schemas/collection/BaseSchema';
+import { Code, ObjectId } from 'mongodb';
+import { SupportedAttributeTypes } from '../../../schemas/collection/CollectionBaseSchema';
 
 export type SupportedAdvancedSettingTypes =
 	| 'require' // 1
@@ -39,251 +41,303 @@ export type AttributeSettingTypes =
 	| NumberTypeSetting
 	| BooleanTypeSetting
 	| DynamicTypeSetting;
+interface TypeSettingProps {
+	required?: boolean;
+	unique?: boolean;
+	isPrivate?: boolean;
+}
+
+interface TextTypeSettingProps extends TypeSettingProps {
+	maxLength?: number;
+	minLength?: number;
+	textType?: TextContentTypes;
+}
+
+interface CodeTypeSettingProps extends TypeSettingProps {
+	maxLength?: number;
+	minLength?: number;
+	language?: CodeLanguageTypes;
+}
+
+interface MediaTypeSettingProps extends TypeSettingProps {
+	mediaType?: MediaTypes;
+	mediaExtension?: MediaExtensions;
+	maxSize?: number;
+}
+
+interface DocumentTypeSettingProps extends TypeSettingProps {
+	documentExtension?: DocumentExtensions;
+	maxSize?: number;
+}
+
+interface DateTypeSettingProps extends TypeSettingProps {
+	format?: DateFormats;
+}
+
+interface NumberTypeSettingProps extends TypeSettingProps {
+	min?: number;
+	max?: number;
+}
+
+interface DecimalTypeSettingProps extends TypeSettingProps {
+	min?: number;
+	max?: number;
+	precision?: [number, number];
+}
+
+interface DynamicTypeSettingProps extends TypeSettingProps {
+	content?: unknown;
+}
+
 export class TypeSetting {
+	@prop({ required: false, default: new ObjectId() })
+	public _id!: ObjectId;
+
 	@prop({ required: true })
-	private _name: string = '';
+	public name!: string;
 	@prop({ required: true })
-	private _type: string = '';
-	@prop({ required: true })
-	private _isRequire: boolean = false;
-	@prop({ required: true })
-	private _isUnique: boolean = false;
-	@prop({ required: true })
-	private _private: boolean = false;
+	public type!: SupportedAttributeTypes;
+	@prop({ required: true, default: false })
+	public required: boolean;
+	@prop({ required: true, default: false })
+	public unique: boolean;
+	@prop({ required: true, default: false })
+	public private: boolean;
 
-	public get name(): string {
-		return this._name;
-	}
-
-	public get type(): string {
-		return this._type;
-	}
-
-	public get isRequire(): boolean {
-		return this._isRequire;
-	}
-
-	public get isUnique(): boolean {
-		return this._isUnique;
-	}
-
-	public get private(): boolean {
-		return this._private;
-	}
-
-	public set name(value: string) {
-		this._name = value;
-	}
-
-	public set type(value: string) {
-		this._type = value;
-	}
-
-	public set isRequire(value: boolean) {
-		this._isRequire = value;
-	}
-
-	public set isUnique(value: boolean) {
-		this._isUnique = value;
-	}
-
-	public set private(value: boolean) {
-		this._private = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps
+	) {
+		this.name = name;
+		this.type = type;
+		this.required = required;
+		this.unique = unique;
+		this.private = isPrivate;
 	}
 }
 
 export class TextTypeSetting extends TypeSetting {
 	@prop({ required: true })
-	private _maxLength: number = 0;
+	public maxLength: number;
 	@prop({ required: true })
-	private _minLength: number = 0;
+	public minLength: number;
 	@prop({ required: true })
-	private _textType: string = '';
+	public textType: TextContentTypes;
 
-	constructor() {
-		super();
-		this.type = TextSchema.type;
-		this._textType = TextSchema.textType;
-		this._maxLength = TextSchema.maxLength;
-		this._minLength = TextSchema.minLength;
-	}
-
-	public get textType(): TextContentTypes {
-		return this._textType as TextContentTypes;
-	}
-
-	public set textType(value: TextContentTypes) {
-		this._textType = value;
-
-		if (value === TextTypes.short_text) {
-			this.maxLength = 255;
-		} else {
-			this.maxLength = 65535;
-		}
-	}
-
-	public set maxLength(value: number) {
-		this._maxLength = value;
-	}
-
-	public set minLength(value: number) {
-		this._minLength = value;
-	}
-
-	public set isRequire(value: boolean) {
-		super.isRequire = value;
-	}
-
-	public set isUnique(value: boolean) {
-		super.isUnique = value;
-	}
-
-	public set private(value: boolean) {
-		super.private = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			maxLength = TextSchema.maxLength,
+			minLength = TextSchema.minLength,
+			textType = 'short_text'
+		}: TextTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.maxLength = maxLength;
+		this.minLength = minLength;
+		this.textType = textType;
 	}
 }
 
-export class CodeTypeSetting extends TextTypeSetting {
-	private _language: CodeLanguageTypes;
+export class CodeTypeSetting extends TypeSetting {
+	@prop({ required: true })
+	public maxLength: number;
+	@prop({ required: true })
+	public minLength: number;
+	@prop({ required: true })
+	public language: CodeLanguageTypes;
 
-	constructor() {
-		super();
-		this.type = CodeSchema.type;
-		this._language = CodeSchema.language;
-		this.maxLength = CodeSchema.maxLength;
-		this.minLength = CodeSchema.minLength;
-	}
-
-	public set language(value: CodeLanguageTypes) {
-		this._language = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			maxLength = TextSchema.maxLength,
+			minLength = TextSchema.minLength,
+			language = 'plaintext'
+		}: CodeTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.maxLength = maxLength;
+		this.minLength = minLength;
+		this.language = language;
 	}
 }
 
 export class MediaTypeSetting extends TypeSetting {
-	private _mediaType: MediaTypes;
-	private _mediaExtension: MediaExtensions;
-	private _maxSize: number;
+	@prop({ required: true })
+	public mediaType: MediaTypes;
+	@prop({ required: true })
+	public mediaExtension: MediaExtensions;
+	@prop({ required: true })
+	public maxSize: number;
 
-	constructor() {
-		super();
-		this.type = MediaSchema.type;
-		this._mediaExtension = MediaSchema.extension;
-		this._mediaType = MediaSchema.mediaType;
-		this._maxSize = MediaSchema.maxSize;
-	}
-
-	public set mediaType(value: MediaTypes) {
-		this._mediaType = value;
-	}
-
-	public set mediaExtension(value: MediaExtensions) {
-		this._mediaExtension = value;
-	}
-
-	public set maxSize(value: number) {
-		this._maxSize = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			mediaType = MediaSchema.mediaType,
+			mediaExtension = MediaSchema.extension,
+			maxSize = MediaSchema.maxSize
+		}: MediaTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.mediaType = mediaType;
+		this.mediaExtension = mediaExtension;
+		this.maxSize = maxSize;
 	}
 }
 
 export class DocumentTypeSetting extends TypeSetting {
-	private _documentExtension: DocumentExtensions;
-	private _maxSize: number;
-	constructor() {
-		super();
-		this.type = DocumentSchema.type;
-		this._documentExtension = DocumentSchema.extension;
-		this._maxSize = DocumentSchema.maxSize;
-	}
+	@prop({ required: true })
+	public documentExtension: DocumentExtensions;
+	@prop({ required: true })
+	public maxSize: number;
 
-	public set documentExtension(value: DocumentExtensions) {
-		this._documentExtension = value;
-	}
-
-	public set maxSize(value: number) {
-		this._maxSize = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			documentExtension = DocumentSchema.extension,
+			maxSize = DocumentSchema.maxSize
+		}: DocumentTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.documentExtension = documentExtension;
+		this.maxSize = maxSize;
 	}
 }
 
 export class DateTypeSetting extends TypeSetting {
-	private _format: DateFormats;
-	constructor() {
-		super();
-		this.type = DateSchema.type;
-		this._format = DateSchema.format;
-	}
+	@prop({ required: true })
+	public format: DateFormats;
 
-	public set format(value: DateFormats) {
-		this._format = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{ format = DateSchema.format }: DateTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.format = format;
 	}
 }
 
 export class NumberTypeSetting extends TypeSetting {
-	private _min: number;
-	private _max: number;
-	constructor() {
-		super();
-		this.type = NumberSchema.type;
-		this._min = NumberSchema.min;
-		this._max = NumberSchema.max;
-	}
+	@prop({ required: true })
+	public min: number;
+	@prop({ required: true })
+	public max: number;
 
-	public set min(value: number) {
-		this._min = value;
-	}
-
-	public set max(value: number) {
-		this._max = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			min = NumberSchema.min,
+			max = NumberSchema.max
+		}: NumberTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.min = min;
+		this.max = max;
 	}
 }
 
 export class DecimalTypeSetting extends TypeSetting {
-	private _min: number;
-	private _max: number;
-	private _precision: [number, number];
-	constructor() {
-		super();
-		this.type = DecimalSchema.type;
-		this._min = DecimalSchema.min;
-		this._max = DecimalSchema.max;
-		this._precision = DecimalSchema.precision;
-	}
+	@prop({ required: true })
+	public min: number;
+	@prop({ required: true })
+	public max: number;
+	@prop({ required: true })
+	public precision: [number, number];
 
-	public set min(value: number) {
-		this._min = value;
-	}
-
-	public set max(value: number) {
-		this._max = value;
-	}
-
-	public set precision(value: [number, number]) {
-		this._precision = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{
+			min = DecimalSchema.min,
+			max = DecimalSchema.max,
+			precision = DecimalSchema.precision
+		}: DecimalTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.min = min;
+		this.max = max;
+		this.precision = precision;
 	}
 }
 
-export class BooleanTypeSetting {
-	private _isRequire: boolean = false;
-	private _private: boolean = false;
-
-	public set isRequire(value: boolean) {
-		this._isRequire = value;
-	}
-
-	public set private(value: boolean) {
-		this._private = value;
+export class BooleanTypeSetting extends TypeSetting {
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
 	}
 }
 
 export class DynamicTypeSetting extends TypeSetting {
-	private _content: unknown = {};
+	@prop({ required: true })
+	public content: unknown = {};
 
-	constructor() {
-		super();
-	}
-
-	public set content(value: unknown) {
-		this._content = value;
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{ content }: DynamicTypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+		this.content = content;
 	}
 }
 
 export const TypeSettingModel = getModelForClass(TypeSetting);
+export const TextTypeSettingModel = getModelForClass(TextTypeSetting);
