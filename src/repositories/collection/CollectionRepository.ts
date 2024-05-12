@@ -192,21 +192,18 @@ class CollectionRepository implements ICollectionRepository {
 		}
 	}
 
-	delete(id: string): Promise<boolean> {
-		return new Promise((resolve, reject) => {
-			CollectionModel.findByIdAndDelete(id, (error: unknown) => {
-				if (error) {
-					if (error instanceof Error)
-						reject(
-							new DocumentDeletionError({
-								message: error.message,
-								cause: error
-							})
-						);
-					else reject(error);
-				} else resolve(true);
-			});
-		});
+	async delete(id: ObjectId): Promise<boolean> {
+		try {
+			const result = await CollectionModel.deleteOne({ _id: id });
+			return result.deletedCount === 1;
+		} catch (error) {
+			if (error instanceof Error)
+				throw new DocumentDeletionError({
+					message: error.message,
+					cause: error
+				});
+			else throw error;
+		}
 	}
 	findAll(): Promise<Collection[]> {
 		return new Promise((resolve, reject) => {

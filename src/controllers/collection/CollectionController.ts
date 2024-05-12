@@ -36,6 +36,7 @@ export interface ICollectionController {
 		res: Response
 	): Promise<void>;
 	getCollectionBySlug(req: Request, res: Response): Promise<void>;
+	deleteCollection(req: Request, res: Response): Promise<void>;
 }
 @injectable()
 class CollectionController implements ICollectionController {
@@ -56,6 +57,38 @@ class CollectionController implements ICollectionController {
 			const collectionModel = await this.collectionService.create(
 				createCollectionForm,
 				req.user as User
+			);
+			const commonResponse = this.responseService.buildSuccessResponse(
+				collectionModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async deleteCollection(req: Request, res: Response): Promise<void> {
+		const slug = req.params.slug as string;
+		const username = (req.user as User).username;
+
+		try {
+			const collectionModel = await this.collectionService.deleteBySlug(
+				username,
+				slug
 			);
 			const commonResponse = this.responseService.buildSuccessResponse(
 				collectionModel,

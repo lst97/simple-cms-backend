@@ -73,6 +73,7 @@ export interface ICollectionService {
 		setting: TypeSetting,
 		content: BaseContent
 	): Promise<Collection | null>;
+	deleteBySlug(username: string, slug: string): Promise<boolean>;
 
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
@@ -146,6 +147,48 @@ class CollectionService implements ICollectionService {
 		}
 
 		return newCollection;
+	}
+
+	async deleteBySlug(username: string, slug: string): Promise<boolean> {
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		if (collection === null) {
+			const resourceNotFoundError = new ServerResourceNotFoundError(
+				'Collection not found'
+			);
+			this.errorHandlerService.handleError({
+				error: resourceNotFoundError,
+				service: CollectionService.name
+			});
+			throw resourceNotFoundError;
+		}
+
+		if (collection.username !== username) {
+			const invalidCredentialError = new AuthInvalidCredentialsError({
+				message: 'You are not allowed to delete this collection'
+			});
+			this.errorHandlerService.handleError({
+				error: invalidCredentialError,
+				service: CollectionService.name
+			});
+			throw invalidCredentialError;
+		}
+
+		// TODO: implement transaction
+
+		const isDeleted = await this.collectionRepository.delete(
+			collection._id!
+		);
+
+		if (isDeleted) {
+			await this.endpointService.deleteEndpointBySlug(
+				username,
+				'resources',
+				slug
+			);
+		}
+
+		return isDeleted;
 	}
 
 	async addAttribute(
@@ -364,7 +407,9 @@ class CollectionService implements ICollectionService {
 	}
 
 	async delete(id: string): Promise<boolean> {
-		const isDeleted = await this.collectionRepository.delete(id);
+		const isDeleted = await this.collectionRepository.delete(
+			new ObjectId(id)
+		);
 		return isDeleted;
 	}
 

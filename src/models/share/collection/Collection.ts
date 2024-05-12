@@ -6,7 +6,7 @@ import { ObjectId } from 'mongodb';
 
 export class Collection {
 	@prop({ required: false, default: new ObjectId() })
-	_id?: ObjectId;
+	_id?: ObjectId = new ObjectId();
 
 	@prop({ required: true })
 	username!: string;

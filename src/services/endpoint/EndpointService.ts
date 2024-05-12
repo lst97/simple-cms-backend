@@ -21,6 +21,11 @@ export interface IEndpointService {
 		prefix: string,
 		visibility?: 'public' | 'private'
 	): Promise<string[] | null>;
+	deleteEndpointBySlug(
+		username: string,
+		prefix: SupportedPrefixes,
+		slug: string
+	): Promise<boolean>;
 }
 
 @injectable()
@@ -76,6 +81,23 @@ class EndpointService {
 				)
 			)?.map((endpoint) => endpoint.slug) ?? null
 		);
+	}
+
+	public async deleteEndpointBySlug(
+		username: string,
+		prefix: SupportedPrefixes,
+		slug: string
+	): Promise<boolean> {
+		switch (prefix) {
+			case 'resources':
+				return await this.endpointRepository.deleteCollectionEndpointBySlug(
+					username,
+					prefix,
+					slug
+				);
+			default:
+				return false;
+		}
 	}
 }
 

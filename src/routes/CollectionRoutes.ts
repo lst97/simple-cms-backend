@@ -92,6 +92,16 @@ class CollectionRoutes implements IBaseRoutes {
 			}
 		);
 
+		this.router.delete(
+			'/collections/:slug',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.deleteCollection(req, res);
+			}
+		);
+
 		// Public accessible routes.
 		this.router.get(
 			'/:username/collections/:prefix',
@@ -102,13 +112,6 @@ class CollectionRoutes implements IBaseRoutes {
 				);
 			}
 		);
-
-		// this.router.get(
-		// 	'/collections/:prefix/:slug',
-		// 	(req: express.Request, res: express.Response) => {
-		// 		this.collectionController.getCollections(req, res);
-		// 	}
-		// );
 
 		this.router.get(
 			'/collections/:slug',

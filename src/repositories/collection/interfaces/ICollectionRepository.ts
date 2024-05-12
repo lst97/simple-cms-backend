@@ -48,7 +48,7 @@ export interface ICollectionRepository {
 		id: ObjectId,
 		updateData: Partial<CollectionAttribute[]>
 	): Promise<Collection | null>;
-	delete(id: string): Promise<boolean>;
+	delete(id: ObjectId): Promise<boolean>;
 	findAll(): Promise<Collection[]>;
 	findByName(collectionName: string): Promise<Collection | null>;
 	findBySlugs(slugs: string[]): Promise<Collection[]>;
