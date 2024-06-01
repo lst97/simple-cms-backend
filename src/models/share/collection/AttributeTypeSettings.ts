@@ -143,7 +143,7 @@ export class TextTypeSetting extends TypeSetting {
 			textType = 'short_text'
 		}: TextTypeSettingProps
 	) {
-		super(name, type, { required, unique, isPrivate });
+		super(name, 'text', { required, unique, isPrivate });
 		this.maxLength = maxLength;
 		this.minLength = minLength;
 		this.textType = textType;
@@ -172,10 +172,66 @@ export class CodeTypeSetting extends TypeSetting {
 			language = 'plaintext'
 		}: CodeTypeSettingProps
 	) {
-		super(name, type, { required, unique, isPrivate });
+		super(name, 'code', { required, unique, isPrivate });
 		this.maxLength = maxLength;
 		this.minLength = minLength;
 		this.language = language;
+	}
+}
+
+export interface ImageMetadataProps {
+	id: string;
+	altText: string;
+	title?: string;
+	caption?: string;
+	description?: string;
+	fileName: string;
+	fileSize: number;
+	dimensions?: {
+		width: number;
+		height: number;
+	};
+	usageRights?: string;
+	creator: string;
+}
+
+export class ImageMetadata {
+	id: string; // Unique identifier
+	altText: string; // Alternative text for accessibility
+	title?: string; // Optional title for the image
+	caption?: string; // Optional caption for the image
+	description?: string; // Optional longer description
+	fileName: string; // Original file name
+	fileSize: number; // File size in bytes
+	dimensions?: {
+		width: number; // Image width in pixels
+		height: number; // Image height in pixels
+	};
+	usageRights?: string; // Information about usage rights
+	creator: string; // Creator/author of the image
+
+	constructor({
+		id,
+		altText,
+		title,
+		caption,
+		description,
+		fileName,
+		fileSize,
+		dimensions,
+		usageRights,
+		creator
+	}: ImageMetadataProps) {
+		this.id = id;
+		this.altText = altText;
+		this.title = title;
+		this.caption = caption;
+		this.description = description;
+		this.fileName = fileName;
+		this.fileSize = fileSize;
+		this.dimensions = dimensions;
+		this.usageRights = usageRights;
+		this.creator = creator;
 	}
 }
 
@@ -185,11 +241,14 @@ export class MediaTypeSetting extends TypeSetting {
 	@prop({ required: true })
 	public mediaExtension: MediaExtensions;
 	@prop({ required: true })
-	public maxSize: number;
+	public maxSize: number; // bytes
+
+	// content related
+	@prop({ required: false, default: [] })
+	public metadata?: ImageMetadata[];
 
 	constructor(
 		name: string,
-		type: SupportedAttributeTypes,
 		{
 			required = false,
 			unique = false,
@@ -201,7 +260,7 @@ export class MediaTypeSetting extends TypeSetting {
 			maxSize = MediaSchema.maxSize
 		}: MediaTypeSettingProps
 	) {
-		super(name, type, { required, unique, isPrivate });
+		super(name, 'media', { required, unique, isPrivate });
 		this.mediaType = mediaType;
 		this.mediaExtension = mediaExtension;
 		this.maxSize = maxSize;
@@ -341,3 +400,4 @@ export class DynamicTypeSetting extends TypeSetting {
 
 export const TypeSettingModel = getModelForClass(TypeSetting);
 export const TextTypeSettingModel = getModelForClass(TextTypeSetting);
+export const MediaTypesSettingModel = getModelForClass(MediaTypeSetting);

@@ -5,6 +5,10 @@ import CollectionController, {
 } from '../controllers/collection/CollectionController';
 import IBaseRoutes from './IBaseRoutes';
 import passport from 'passport';
+import {
+	IStorageManagerService,
+	StorageManagerService
+} from '../services/StorageManagerService';
 @injectable()
 class CollectionRoutes implements IBaseRoutes {
 	private router: express.Router;
@@ -15,7 +19,9 @@ class CollectionRoutes implements IBaseRoutes {
 
 	constructor(
 		@inject(CollectionController)
-		private collectionController: ICollectionController
+		private collectionController: ICollectionController,
+		@inject(StorageManagerService)
+		private storageManagerService: IStorageManagerService
 	) {
 		this.router = express.Router();
 		this.configureRoutes();
@@ -77,6 +83,7 @@ class CollectionRoutes implements IBaseRoutes {
 			passport.authenticate('jwt', {
 				session: false
 			}),
+			this.storageManagerService.upload.array('value', 32),
 			(req: express.Request, res: express.Response) => {
 				this.collectionController.updateCollectionAttribute(req, res);
 			}
@@ -104,7 +111,7 @@ class CollectionRoutes implements IBaseRoutes {
 
 		// Public accessible routes.
 		this.router.get(
-			'/:username/collections/:prefix',
+			'/:username/collections/*',
 			(req: express.Request, res: express.Response) => {
 				this.collectionController.getCollectionsByPrefixAndUsername(
 					req,

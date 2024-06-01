@@ -1,8 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-export type SupportedPrefixes = 'resources' | 'projects';
-
 export interface CollectionEndpointParams {
+	prefix: string;
 	slug: string;
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS';
 	status: 'published' | 'draft';
@@ -36,8 +35,8 @@ export class CollectionEndpoint {
 	@prop({ required: true })
 	username: string;
 
-	@prop({ required: true })
-	prefix: string = 'resources';
+	@prop({ required: true, default: '/' })
+	prefix: string;
 
 	@prop({ required: true, unique: true })
 	slug: string;
@@ -59,9 +58,10 @@ export class CollectionEndpoint {
 
 	constructor(
 		createdBy: string,
-		{ slug, method, status, visibility }: CollectionEndpointParams
+		{ prefix, slug, method, status, visibility }: CollectionEndpointParams
 	) {
 		this.username = createdBy;
+		this.prefix = prefix === '' ? '/' : prefix;
 		this.slug = slug;
 		this.method = method;
 		this.status = status;

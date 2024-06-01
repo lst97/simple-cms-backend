@@ -28,6 +28,10 @@ export class AuthUserRepository {
 			SqlReadError
 		)) as any;
 
+		if (!result) {
+			return null;
+		}
+
 		return new AuthUserDbModel({
 			id: result.id,
 			email: result.email,

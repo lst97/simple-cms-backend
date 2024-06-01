@@ -11,13 +11,29 @@ import {
 	ServerResourceNotFoundError
 } from '@lst97/common-errors';
 import { ErrorHandlerService } from '@lst97/common_response';
-import { BaseContent } from '../../models/share/collection/AttributeContents';
+import {
+	BaseContent,
+	MediaContent,
+	ParallelFilesUploadContent
+} from '../../models/share/collection/AttributeContents';
 import {
 	CodeTypeSetting,
 	TextTypeSetting,
 	TypeSetting
 } from '../../models/share/collection/AttributeTypeSettings';
 import { ObjectId } from 'mongodb';
+import {
+	IStorageManagerService,
+	StorageManagerService
+} from '../StorageManagerService';
+import { MediaTypes } from '../../schemas/collection/BaseSchema';
+import {
+	Mutex,
+	MutexInterface,
+	Semaphore,
+	SemaphoreInterface,
+	withTimeout
+} from 'async-mutex';
 
 export interface UpdateCollectionDataProps {
 	updateAttributesContent?: BaseContent[];
@@ -28,6 +44,13 @@ export interface UpdateCollectionDataProps {
 interface UpdateAttributeDataProps {
 	updateAttributeContent?: BaseContent;
 	updateAttributeSetting?: TypeSetting;
+}
+export interface ParallelUploadMetadataProps {
+	sessionId: string;
+	total: number;
+	nameMap: Map<string, string>;
+	groupId: string;
+	type: MediaTypes;
 }
 export interface ICollectionService {
 	create(
@@ -49,7 +72,8 @@ export interface ICollectionService {
 		{
 			updateAttributeContent,
 			updateAttributeSetting
-		}: UpdateAttributeDataProps
+		}: UpdateAttributeDataProps,
+		parallelUploadMetaData?: ParallelUploadMetadataProps
 	): Promise<Collection | null>;
 
 	update(
@@ -92,7 +116,9 @@ class CollectionService implements ICollectionService {
 		@inject(EndpointService)
 		private endpointService: IEndpointService,
 		@inject(ErrorHandlerService)
-		private errorHandlerService: ErrorHandlerService
+		private errorHandlerService: ErrorHandlerService,
+		@inject(StorageManagerService)
+		private storageManagerService: IStorageManagerService
 	) {}
 
 	/**
@@ -139,7 +165,7 @@ class CollectionService implements ICollectionService {
 		if (
 			(await this.endpointService.createEndpoint(
 				user.username,
-				'resources',
+				form.info.subdirectory,
 				newCollection.slug
 			)) === null
 		) {
@@ -181,11 +207,7 @@ class CollectionService implements ICollectionService {
 		);
 
 		if (isDeleted) {
-			await this.endpointService.deleteEndpointBySlug(
-				username,
-				'resources',
-				slug
-			);
+			await this.endpointService.deleteEndpointBySlug(username, slug);
 		}
 
 		return isDeleted;
@@ -217,11 +239,16 @@ class CollectionService implements ICollectionService {
 		{
 			updateAttributeContent,
 			updateAttributeSetting
-		}: UpdateAttributeDataProps
+		}: UpdateAttributeDataProps,
+		{
+			sessionId,
+			total,
+			nameMap,
+			groupId,
+			type
+		}: ParallelUploadMetadataProps
 	): Promise<Collection | null> {
-		// original collection
 		const collection = await this.collectionRepository.findBySlug(slug);
-
 		this.validateCollectionAccess(collection, username);
 
 		let updatedAttribute = collection!.attributes.find(
@@ -241,8 +268,49 @@ class CollectionService implements ICollectionService {
 
 		updatedAttribute.setting =
 			updateAttributeSetting ?? updatedAttribute.setting;
-		updatedAttribute.content =
-			updateAttributeContent ?? updatedAttribute.content;
+
+		if (sessionId && total) {
+			let [key, value] = nameMap.entries().next().value;
+
+			await this.storageManagerService.received(sessionId, key, value);
+
+			const namesMap =
+				this.storageManagerService.getMappedFileNames(sessionId);
+
+			if (namesMap.size === total) {
+				if (!updatedAttribute.content.sessionId) {
+					updatedAttribute.content = new ParallelFilesUploadContent(
+						sessionId,
+						total
+					);
+				}
+
+				// all files uploaded to storage/temp/sessionId
+				// move files to storage/username/type/groupId
+
+				this.storageManagerService.movePendingFilesToStorage(
+					username,
+					sessionId,
+					type,
+					groupId
+				);
+
+				for (const [key, value] of namesMap) {
+					const mediaContent = new MediaContent({
+						url: `storage/${username}/${value}`,
+						file: '', // base64, not used for efficiency
+						fileName: key
+					});
+
+					(updatedAttribute.content.value as MediaContent[]).push(
+						mediaContent
+					);
+				}
+			}
+		} else {
+			updatedAttribute.content =
+				updateAttributeContent ?? updatedAttribute.content;
+		}
 
 		const updatedCollection =
 			await this.collectionRepository.updateAttributeById(
@@ -288,8 +356,9 @@ class CollectionService implements ICollectionService {
 			prefix
 		);
 
-		if (slugs === null) {
-			return [];
+		// todo: update the lib to add this error
+		if (slugs === null || slugs.length === 0) {
+			throw new ServerResourceNotFoundError('No collection found');
 		}
 
 		return await this.findCollectionsBySlugs(

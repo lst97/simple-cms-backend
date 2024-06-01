@@ -4,7 +4,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import appConfig, { IAppConfig } from './configs/Config';
-import Credentials from './configs/Credentials';
+import Credentials from './configs/credentials';
 import https from 'https';
 import { Config as CommonResponseConfig } from '@lst97/common_response';
 import {
@@ -25,6 +25,8 @@ import IBaseRoutes from './routes/IBaseRoutes';
 import AuthenticateRoutes from './routes/AuthenticateRoutes';
 import UserRoutes from './routes/UserRoutes';
 import PassportConfig from './configs/Passport.config';
+import EndpointRoutes from './routes/EndpointRoutes';
+import StorageRoutes from './routes/StorageRoutes';
 @injectable()
 class App {
 	private app: express.Application;
@@ -99,6 +101,16 @@ class App {
 		this.app.use(
 			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(UserRoutes).routers
+		);
+
+		this.app.use(
+			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			container.get<IBaseRoutes>(EndpointRoutes).routers
+		);
+
+		this.app.use(
+			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			container.get<IBaseRoutes>(StorageRoutes).routers
 		);
 	}
 

@@ -1,5 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
-import { BaseContent } from './AttributeContents';
+import { BaseContent, ParallelFilesUploadContent } from './AttributeContents';
 import { AttributeSettingTypes } from './AttributeTypeSettings';
 import { ObjectId } from 'mongodb';
 
@@ -14,7 +14,12 @@ export class CollectionAttribute {
 
 	constructor(setting: AttributeSettingTypes, content: BaseContent) {
 		this.setting = setting;
-		this.content = content;
+		if (setting.type === 'media') {
+			this.content = new ParallelFilesUploadContent('', 0);
+		} else {
+			this.content = content;
+		}
+
 		this._id = new ObjectId();
 	}
 }

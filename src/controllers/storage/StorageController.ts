@@ -1,7 +1,4 @@
 import { inject, injectable } from 'inversify';
-import EndpointService, {
-	IEndpointService
-} from '../../services/endpoint/EndpointService';
 import { Request, Response } from 'express';
 import { DefinedBaseError, ControllerError } from '@lst97/common-errors';
 import {
@@ -11,33 +8,33 @@ import {
 	IResponseService
 } from '@lst97/common_response';
 import CollectionController from '../collection/CollectionController';
+import {
+	IStorageManagerService,
+	StorageManagerService
+} from '../../services/StorageManagerService';
 
-interface IEndpointController {
-	getEndpointByCollectionSlug(req: Request, res: Response): void;
+export interface IStorageController {
+	getFile(req: Request, res: Response): void;
 }
 @injectable()
-class EndpointController implements IEndpointController {
+class StorageController implements IStorageController {
 	constructor(
-		@inject(EndpointService) private endpointService: IEndpointService,
+		@inject(StorageManagerService)
+		private storageManagerService: IStorageManagerService,
 		@inject(ErrorHandlerService)
 		private errorHandlerService: IErrorHandlerService,
 		@inject(ResponseService) private responseService: IResponseService
 	) {}
 
-	public async getEndpointByCollectionSlug(req: Request, res: Response) {
-		const slug = req.params.slug;
-
+	public async getFile(req: Request, res: Response) {
 		try {
-			const endpointModel = await this.endpointService.findEndpointBySlug(
-				slug
+			const { username, fileId } = req.params; // Extract parameters from the request
+			const filePath = this.storageManagerService.getFile(
+				username,
+				fileId
 			);
 
-			const commonResponse = this.responseService.buildSuccessResponse(
-				endpointModel,
-				req.headers.requestId as string
-			);
-
-			res.status(commonResponse.httpStatus).json(commonResponse.response);
+			res.sendFile(filePath);
 		} catch (error) {
 			if (!(error instanceof DefinedBaseError)) {
 				this.errorHandlerService.handleUnknownControllerError({
@@ -56,4 +53,4 @@ class EndpointController implements IEndpointController {
 	}
 }
 
-export default EndpointController;
+export default StorageController;

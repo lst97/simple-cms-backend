@@ -22,7 +22,6 @@ export interface IEndpointRepository {
 	): Promise<CollectionEndpoint[] | null>;
 	deleteCollectionEndpointBySlug(
 		username: string,
-		prefix: string,
 		slug: string
 	): Promise<boolean>;
 }
@@ -71,12 +70,10 @@ class EndpointRepository {
 
 	async deleteCollectionEndpointBySlug(
 		username: string,
-		prefix: string,
 		slug: string
 	): Promise<boolean> {
 		const result = await CollectionEndpointModel.deleteOne({
 			username: username,
-			prefix: prefix,
 			slug: slug
 		});
 		return result.deletedCount === 1;

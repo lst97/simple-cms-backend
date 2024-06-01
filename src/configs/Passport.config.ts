@@ -1,6 +1,5 @@
 import passport from 'passport';
-import { ExtractJwt } from 'passport-jwt';
-import { Strategy as JwtStrategy } from 'passport-jwt';
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import container from '../inversify.config';
 import UserService, { IUserService } from '../services/UserService';
 

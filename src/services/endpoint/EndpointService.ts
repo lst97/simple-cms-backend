@@ -1,17 +1,18 @@
 import { inject, injectable } from 'inversify';
 import {
 	CollectionEndpoint,
-	IEndpoint,
-	SupportedPrefixes
+	IEndpoint
 } from '../../models/share/endpoint/Endpoint';
 import EndpointRepository, {
 	IEndpointRepository
 } from '../../repositories/endpoint/EndpointRepository';
+import { ServerResourceNotFoundError } from '@lst97/common-errors';
 
+// TODO: should not be null, should be resource not found error
 export interface IEndpointService {
 	createEndpoint(
 		username: string,
-		prefix: SupportedPrefixes,
+		prefix: string,
 		slug: string
 	): Promise<IEndpoint | null>;
 	findEndpointBySlug(slug: string): Promise<IEndpoint | null>;
@@ -21,11 +22,7 @@ export interface IEndpointService {
 		prefix: string,
 		visibility?: 'public' | 'private'
 	): Promise<string[] | null>;
-	deleteEndpointBySlug(
-		username: string,
-		prefix: SupportedPrefixes,
-		slug: string
-	): Promise<boolean>;
+	deleteEndpointBySlug(username: string, slug: string): Promise<boolean>;
 }
 
 @injectable()
@@ -37,26 +34,29 @@ class EndpointService {
 
 	public async createEndpoint(
 		username: string,
-		prefix: SupportedPrefixes,
+		prefix: string,
 		slug: string
 	): Promise<IEndpoint | null> {
-		switch (prefix) {
-			case 'resources':
-				return await this.endpointRepository.createCollectionEndpoint(
-					new CollectionEndpoint(username, {
-						slug: slug,
-						method: 'GET',
-						status: 'published',
-						visibility: 'public'
-					})
-				);
-			default:
-				return null;
-		}
+		return await this.endpointRepository.createCollectionEndpoint(
+			new CollectionEndpoint(username, {
+				prefix: prefix,
+				slug: slug,
+				method: 'GET',
+				status: 'published',
+				visibility: 'public'
+			})
+		);
 	}
 
 	public async findEndpointBySlug(slug: string): Promise<IEndpoint | null> {
-		return await this.endpointRepository.findCollectionEndpointBySlug(slug);
+		const endpoint =
+			await this.endpointRepository.findCollectionEndpointBySlug(slug);
+
+		if (!endpoint) {
+			throw new ServerResourceNotFoundError('Endpoint not found');
+		}
+
+		return endpoint;
 	}
 
 	public async findEndpointsByUsername(
@@ -85,19 +85,12 @@ class EndpointService {
 
 	public async deleteEndpointBySlug(
 		username: string,
-		prefix: SupportedPrefixes,
 		slug: string
 	): Promise<boolean> {
-		switch (prefix) {
-			case 'resources':
-				return await this.endpointRepository.deleteCollectionEndpointBySlug(
-					username,
-					prefix,
-					slug
-				);
-			default:
-				return false;
-		}
+		return await this.endpointRepository.deleteCollectionEndpointBySlug(
+			username,
+			slug
+		);
 	}
 }
 

@@ -57,6 +57,8 @@ class AuthenticateController {
 				error as Error,
 				req.headers.requestId as string
 			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
 		}
 	}
 }

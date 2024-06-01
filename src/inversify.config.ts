@@ -20,6 +20,15 @@ import { AuthUserRepository } from './repositories/auth/AuthUserRepository';
 import { UserRepository } from './repositories/user/UserRepository';
 import EndpointService from './services/endpoint/EndpointService';
 import EndpointRepository from './repositories/endpoint/EndpointRepository';
+import EndpointRoutes from './routes/EndpointRoutes';
+import EndpointController from './controllers/endpoint/EndpointController';
+import StorageRepository from './repositories/storage/StorageRepository';
+import {
+	FileNameMapperService,
+	StorageManagerService
+} from './services/StorageManagerService';
+import StorageRoutes from './routes/StorageRoutes';
+import StorageController from './controllers/storage/StorageController';
 
 const container = new Container();
 function buildLibContainers() {
@@ -32,12 +41,15 @@ function buildRepositoryContainers() {
 	container.bind(AuthUserRepository).toSelf().inTransientScope();
 	container.bind(UserRepository).toSelf().inTransientScope();
 	container.bind(EndpointRepository).toSelf().inTransientScope();
+	container.bind(StorageRepository).toSelf().inTransientScope();
 }
 
 function buildServiceContainers() {
 	container.bind(DatabaseService).toSelf().inSingletonScope();
 	container.bind(SQLite3QueryService).toSelf().inSingletonScope();
 	container.bind(MongoDBQueryService).toSelf().inSingletonScope();
+	container.bind(StorageManagerService).toSelf().inSingletonScope();
+	container.bind(FileNameMapperService).toSelf().inSingletonScope();
 
 	container.bind(CollectionService).toSelf().inTransientScope();
 	container.bind(AuthenticateService).toSelf().inTransientScope();
@@ -49,6 +61,8 @@ function buildControllerContainers() {
 	container.bind(CollectionController).toSelf().inTransientScope();
 	container.bind(AuthenticateController).toSelf().inTransientScope();
 	container.bind(UserController).toSelf().inTransientScope();
+	container.bind(EndpointController).toSelf().inTransientScope();
+	container.bind(StorageController).toSelf().inTransientScope();
 }
 
 function buildMiddlewareContainers() {}
@@ -57,6 +71,8 @@ function buildRouterContainers() {
 	container.bind(CollectionRoutes).toSelf().inSingletonScope();
 	container.bind(AuthenticateRoutes).toSelf().inSingletonScope();
 	container.bind(UserRoutes).toSelf().inSingletonScope();
+	container.bind(EndpointRoutes).toSelf().inSingletonScope();
+	container.bind(StorageRoutes).toSelf().inSingletonScope();
 }
 
 function buildAppContainers() {

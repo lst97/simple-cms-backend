@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
 import CollectionService, {
-	ICollectionService
+	ICollectionService,
+	ParallelUploadMetadataProps
 } from '../../services/collection/CollectionService';
 import {
 	ErrorHandlerService,
@@ -22,6 +23,7 @@ import EndpointService, {
 import { BaseContent } from '../../models/share/collection/AttributeContents';
 import { TypeSetting } from '../../models/share/collection/AttributeTypeSettings';
 import { Collection } from '../../models/share/collection/Collection';
+import { MediaTypes } from '../../schemas/collection/BaseSchema';
 
 export interface ICollectionController {
 	createCollection(req: Request, res: Response): Promise<void>;
@@ -226,18 +228,40 @@ class CollectionController implements ICollectionController {
 		req: Request,
 		res: Response
 	): Promise<void> {
-		const slug = req.params.slug as string;
-		const attributeId = req.params.id as string;
+		const slug = req.params.slug;
+		const attributeId = req.params.id;
 		const user = req.user as User;
+
+		// parallel upload
+		const sessionId = req.query.sessionId as string;
+		const total = req.query.total as string;
+		const groupId = req.query.groupId as string;
+		const type = req.query.type as MediaTypes;
 
 		let updateAttributeContent: BaseContent | undefined = undefined;
 		let updateAttributeSetting: TypeSetting | undefined = undefined;
+		let parallelMetadata: ParallelUploadMetadataProps | undefined =
+			undefined;
 
 		if (req.query.content === 'true') {
-			updateAttributeContent = req.body.content as BaseContent;
+			if (req.body.value?._id !== undefined) {
+				updateAttributeContent = req.body.value as BaseContent;
+			} else {
+				updateAttributeContent = new BaseContent(req.body.value);
+			}
 		}
 		if (req.query.setting === 'true') {
 			updateAttributeSetting = req.body.setting as TypeSetting;
+		}
+
+		if (sessionId && total) {
+			parallelMetadata = {
+				sessionId: sessionId,
+				total: parseInt(total),
+				nameMap: new Map(Object.entries(req.body.fileNameMap)),
+				groupId: groupId,
+				type: type
+			};
 		}
 
 		try {
@@ -249,7 +273,8 @@ class CollectionController implements ICollectionController {
 					{
 						updateAttributeContent: updateAttributeContent,
 						updateAttributeSetting: updateAttributeSetting
-					}
+					},
+					parallelMetadata
 				);
 			const commonResponse = this.responseService.buildSuccessResponse(
 				collectionModel,
@@ -352,11 +377,12 @@ class CollectionController implements ICollectionController {
 		}
 	}
 
+	// prefix = subdirectory
 	public async getCollectionsByPrefixAndUsername(
 		req: Request,
 		res: Response
 	): Promise<void> {
-		const prefix = req.params.prefix as string;
+		const prefix = (req.params[0] as string) + '/';
 		const username = req.params.username as string;
 
 		// need to check query schema

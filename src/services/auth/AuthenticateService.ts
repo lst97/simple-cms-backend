@@ -1,6 +1,9 @@
 import { hashPassword, verifyPassword } from '../../utils/HashHelper';
 import jwt from 'jsonwebtoken';
-import { IErrorHandlerService } from '@lst97/common_response';
+import {
+	IErrorHandlerService,
+	ErrorHandlerService
+} from '@lst97/common_response';
 import {
 	AuthInvalidEmailError,
 	AuthInvalidPasswordError,
@@ -9,7 +12,6 @@ import {
 } from '@lst97/common-errors';
 import { Request } from 'express';
 import { inject, injectable } from 'inversify';
-import { ErrorHandlerService } from '@lst97/common_response';
 import { LoginForm } from '../../models/share/auth/forms/Login.form';
 import {
 	AuthUserRepository,
@@ -56,10 +58,7 @@ class AuthenticateService {
 		}
 
 		if (
-			(await verifyPassword(
-				form.password,
-				authUserDbModel.passwordHash
-			)) == false
+			!(await verifyPassword(form.password, authUserDbModel.passwordHash))
 		) {
 			const authError = new AuthInvalidPasswordError({
 				request: req
@@ -96,7 +95,7 @@ class AuthenticateService {
 
 		const accessToken = jwt.sign(
 			{
-				id: authUserDbModel.id!,
+				id: authUserDbModel.id,
 				username: userDbModel.username,
 				email: userDbModel.email,
 				role,
