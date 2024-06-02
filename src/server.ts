@@ -65,7 +65,14 @@ class App {
 			appConfig.appIdentifier.name;
 
 		this.app.use(helmet());
-		this.app.use(cors());
+		this.app.use(
+			cors({
+				origin: '*',
+				allowedHeaders: ['Content-Type', 'Authorization'],
+				methods: ['GET', 'POST', 'PUT', 'DELETE'],
+				optionsSuccessStatus: 200
+			})
+		);
 		this.app.use(express.json());
 		this.app.use(PassportConfig.instance.init());
 

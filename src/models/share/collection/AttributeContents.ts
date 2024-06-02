@@ -40,7 +40,7 @@ export class ParallelFilesUploadContent extends BaseContent {
 		this.sessionId = sessionId;
 		this.total = total;
 		this.groupId = groupId;
-		this.value = [];
+		this.value = value ?? [];
 	}
 }
 

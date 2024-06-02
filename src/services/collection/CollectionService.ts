@@ -297,7 +297,7 @@ class CollectionService implements ICollectionService {
 
 				for (const [key, value] of namesMap) {
 					const mediaContent = new MediaContent({
-						url: `storage/${username}/${value}`,
+						url: `storage/${username}/${value.split('.')[0]}`,
 						file: '', // base64, not used for efficiency
 						fileName: key
 					});
