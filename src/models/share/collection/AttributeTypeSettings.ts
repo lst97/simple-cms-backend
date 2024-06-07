@@ -40,6 +40,9 @@ export type AttributeSettingTypes =
 	| DecimalTypeSetting
 	| NumberTypeSetting
 	| BooleanTypeSetting
+	| PostTypeSetting
+	| CommentTypeSetting
+	| ReactionTypeSetting
 	| DynamicTypeSetting;
 interface TypeSettingProps {
 	required?: boolean;
@@ -121,6 +124,34 @@ export class TypeSetting {
 	}
 }
 
+export class CommentTypeSetting extends TypeSetting {
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+	}
+}
+
+export class ReactionTypeSetting extends TypeSetting {
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps
+	) {
+		super(name, type, { required, unique, isPrivate });
+	}
+}
+
 export class TextTypeSetting extends TypeSetting {
 	@prop({ required: true })
 	public maxLength: number;
@@ -147,6 +178,33 @@ export class TextTypeSetting extends TypeSetting {
 		this.maxLength = maxLength;
 		this.minLength = minLength;
 		this.textType = textType;
+	}
+}
+
+export interface PostCollectionSetting {
+	comment: boolean;
+	reaction: boolean;
+}
+
+export class PostTypeSetting extends TypeSetting {
+	@prop({ required: true })
+	public comment: boolean;
+	@prop({ required: true })
+	public reaction: boolean;
+
+	constructor(
+		name: string,
+		type: SupportedAttributeTypes,
+		{
+			required = false,
+			unique = false,
+			isPrivate = false
+		}: TypeSettingProps,
+		{ comment = false, reaction = false }: PostTypeSetting
+	) {
+		super(name, 'post', { required, unique, isPrivate });
+		this.comment = comment;
+		this.reaction = reaction;
 	}
 }
 

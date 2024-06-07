@@ -251,74 +251,82 @@ class CollectionService implements ICollectionService {
 		const collection = await this.collectionRepository.findBySlug(slug);
 		this.validateCollectionAccess(collection, username);
 
-		let updatedAttribute = collection!.attributes.find(
-			(attribute) => attribute._id.toHexString() === attributeId
-		);
+		let updatedAttribute: CollectionAttribute | Collection | undefined;
 
-		if (updatedAttribute === undefined) {
-			const resourceNotFoundError = new ServerResourceNotFoundError(
-				'Attribute not found'
-			);
-			this.errorHandlerService.handleError({
-				error: resourceNotFoundError,
-				service: CollectionService.name
-			});
-			throw resourceNotFoundError;
-		}
+		if (collection?.kind === 'collection') {
+			updatedAttribute = (
+				collection.attributes as CollectionAttribute[]
+			).find((attribute) => attribute._id.toHexString() === attributeId);
 
-		updatedAttribute.setting =
-			updateAttributeSetting ?? updatedAttribute.setting;
+			if (updatedAttribute === undefined) {
+				const resourceNotFoundError = new ServerResourceNotFoundError(
+					'Attribute not found'
+				);
+				this.errorHandlerService.handleError({
+					error: resourceNotFoundError,
+					service: CollectionService.name
+				});
+				throw resourceNotFoundError;
+			}
 
-		if (sessionId && total) {
-			let [key, value] = nameMap.entries().next().value;
+			updatedAttribute.setting =
+				updateAttributeSetting ?? updatedAttribute.setting;
 
-			await this.storageManagerService.received(sessionId, key, value);
+			if (sessionId && total) {
+				let [key, value] = nameMap.entries().next().value;
 
-			const namesMap =
-				this.storageManagerService.getMappedFileNames(sessionId);
-
-			if (namesMap.size === total) {
-				if (!updatedAttribute.content.sessionId) {
-					updatedAttribute.content = new ParallelFilesUploadContent(
-						sessionId,
-						total
-					);
-				}
-
-				// all files uploaded to storage/temp/sessionId
-				// move files to storage/username/type/groupId
-
-				this.storageManagerService.movePendingFilesToStorage(
-					username,
+				await this.storageManagerService.received(
 					sessionId,
-					type,
-					groupId
+					key,
+					value
 				);
 
-				for (const [key, value] of namesMap) {
-					const mediaContent = new MediaContent({
-						url: `storage/${username}/${value.split('.')[0]}`,
-						file: '', // base64, not used for efficiency
-						fileName: key
-					});
+				const namesMap =
+					this.storageManagerService.getMappedFileNames(sessionId);
 
-					(updatedAttribute.content.value as MediaContent[]).push(
-						mediaContent
+				if (namesMap.size === total) {
+					if (!updatedAttribute.content.sessionId) {
+						updatedAttribute.content =
+							new ParallelFilesUploadContent(sessionId, total);
+					}
+
+					// all files uploaded to storage/temp/sessionId
+					// move files to storage/username/type/groupId
+
+					this.storageManagerService.movePendingFilesToStorage(
+						username,
+						sessionId,
+						type,
+						groupId
 					);
+
+					for (const [key, value] of namesMap) {
+						const mediaContent = new MediaContent({
+							url: `storage/${username}/${value.split('.')[0]}`,
+							file: '', // base64, not used for efficiency
+							fileName: key
+						});
+
+						(updatedAttribute.content.value as MediaContent[]).push(
+							mediaContent
+						);
+					}
 				}
+			} else {
+				updatedAttribute.content =
+					updateAttributeContent ?? updatedAttribute.content;
 			}
-		} else {
-			updatedAttribute.content =
-				updateAttributeContent ?? updatedAttribute.content;
+			const updatedCollection =
+				await this.collectionRepository.updateAttributeById(
+					collection._id!,
+					updatedAttribute
+				);
+
+			return updatedCollection;
 		}
 
-		const updatedCollection =
-			await this.collectionRepository.updateAttributeById(
-				collection!._id!,
-				updatedAttribute
-			);
-
-		return updatedCollection;
+		// todo: support post
+		return null;
 	}
 	async findBySlug(slug: string): Promise<Collection | null> {
 		const collection = await this.collectionRepository.findBySlug(slug);
@@ -391,32 +399,40 @@ class CollectionService implements ICollectionService {
 				updatedAt: new Date()
 			};
 		}
-		if (updateAttributesContent) {
-			for (const content of updateAttributesContent) {
-				const attribute = updatedCollection!.attributes.find(
-					(attribute) => attribute.content._id === content._id
-				);
-				if (attribute) {
-					attribute.content = content;
+
+		if (collection?.kind === 'collection') {
+			if (updateAttributesContent) {
+				for (const content of updateAttributesContent) {
+					const attribute = (
+						updatedCollection!.attributes as CollectionAttribute[]
+					).find(
+						(attribute) => attribute.content._id === content._id
+					);
+					if (attribute) {
+						attribute.content = content;
+					}
 				}
 			}
-		}
-		if (updateAttributesSetting) {
-			for (const setting of updateAttributesSetting) {
-				const attribute = updatedCollection!.attributes.find(
-					(attribute) =>
-						(attribute.setting as TypeSetting)._id === setting._id
-				);
-				if (attribute) {
-					// TODO: support change to other type
-					switch ((attribute.setting as TypeSetting).type) {
-						case 'text':
-							(attribute.setting as TextTypeSetting) =
-								setting as TextTypeSetting;
-							break;
-						case 'code':
-							(attribute.setting as CodeTypeSetting) =
-								setting as CodeTypeSetting;
+			if (updateAttributesSetting) {
+				for (const setting of updateAttributesSetting) {
+					const attribute = (
+						updatedCollection!.attributes as CollectionAttribute[]
+					).find(
+						(attribute) =>
+							(attribute.setting as TypeSetting)._id ===
+							setting._id
+					);
+					if (attribute) {
+						// TODO: support change to other type
+						switch ((attribute.setting as TypeSetting).type) {
+							case 'text':
+								(attribute.setting as TextTypeSetting) =
+									setting as TextTypeSetting;
+								break;
+							case 'code':
+								(attribute.setting as CodeTypeSetting) =
+									setting as CodeTypeSetting;
+						}
 					}
 				}
 			}

@@ -1,24 +1,27 @@
+import { PostCollectionSetting } from '../share/collection/AttributeTypeSettings';
+import { Collection } from '../share/collection/Collection';
 import { CollectionAttribute } from '../share/collection/CollectionAttributes';
 
 interface CollectionFormProps {
-	kind: 'collection';
+	kind: 'collection' | 'post';
 	info: CollectionInfo;
-	attributes: CollectionAttribute[];
+	attributes: CollectionAttribute[] | Collection[];
 }
 
 export interface CollectionInfo {
 	name: string;
 	description: string;
 	subdirectory: string;
+	setting?: PostCollectionSetting;
 }
 
 export class CollectionForm implements CollectionFormProps {
-	kind: 'collection';
+	kind: 'collection' | 'post';
 	info: CollectionInfo;
-	attributes: CollectionAttribute[];
+	attributes: CollectionAttribute[] | Collection[];
 
-	constructor() {
-		this.kind = 'collection';
+	constructor(kind?: 'collection' | 'post') {
+		this.kind = kind ?? 'collection';
 		this.info = { name: '', description: '', subdirectory: '' };
 		this.attributes = [];
 	}
