@@ -162,10 +162,19 @@ class CollectionService implements ICollectionService {
 			new Collection(user.username, form)
 		);
 
+		let prefix = '';
+
+		if (
+			(newCollection.attributes[0] as CollectionAttribute).setting
+				.type === 'posts'
+		) {
+			prefix = 'posts/';
+		}
+
 		if (
 			(await this.endpointService.createEndpoint(
 				user.username,
-				form.info.subdirectory,
+				prefix + form.info.subdirectory,
 				newCollection.slug
 			)) === null
 		) {
