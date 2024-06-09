@@ -15,12 +15,12 @@ class PostsRepository {
 	constructor() {}
 
 	async insertPost(
-		slug: string,
+		postsCollectionSlug: string,
 		post: Collection
 	): Promise<Collection | null> {
 		try {
 			const collection = await CollectionModel.findOneAndUpdate(
-				{ slug },
+				{ postsCollectionSlug },
 				{ $push: { attributes: post } },
 				{ new: true }
 			);

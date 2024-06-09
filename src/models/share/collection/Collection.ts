@@ -4,9 +4,11 @@ import { CollectionForm } from '../../forms/CollectionForm';
 import { GeneratorsUtil } from '../../../utils/Generators';
 import { ObjectId } from 'mongodb';
 import {
+	CommentTypeSetting,
 	PostCollectionSetting,
 	PostTypeSetting
 } from './AttributeTypeSettings';
+import { CommentContent } from './AttributeContents';
 
 export class Collection {
 	@prop({ required: false, default: new ObjectId() })
@@ -49,11 +51,15 @@ export class Collection {
 			this.slug = GeneratorsUtil.generateUrlSlug(this.collectionName);
 			this.kind = form.kind;
 			this.attributes = form.attributes;
-
-			if (this.kind === 'post') {
-				this.setting = form.info.setting;
-			}
 		}
+	}
+}
+
+export class PostCollection extends Collection {
+	constructor(username: string, form: CollectionForm) {
+		super(username, form);
+		this.kind = 'post';
+		this.setting = form.info.setting;
 	}
 }
 

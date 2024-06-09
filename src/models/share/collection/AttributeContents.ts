@@ -83,7 +83,7 @@ export interface IComment {
 	status?: CommentStatus;
 }
 
-export class Comment extends BaseContent {
+export class CommentContent extends BaseContent {
 	@prop({ required: true })
 	postId!: ObjectId;
 
@@ -105,13 +105,24 @@ export class Comment extends BaseContent {
 	@prop({ required: false })
 	status!: CommentStatus;
 
-	constructor(postId: ObjectId, username: string, content: string) {
+	constructor(postId: ObjectId, username: string, content?: string) {
 		super(content);
 		this.postId = postId;
 		this.username = username;
 		this.createdAt = new Date();
 		this.votes = [];
 		this.status = CommentStatus.Published;
+	}
+}
+
+export class ReactionContent extends BaseContent {
+	// 5 reaction types: Like, Love, Haha, Wow, Sad, Angry
+	@prop({ required: true, default: 0 })
+	reactionVotes!: [Vote[], Vote[], Vote[], Vote[], Vote[]];
+
+	constructor() {
+		super();
+		this.reactionVotes = [[], [], [], [], []];
 	}
 }
 
@@ -148,4 +159,5 @@ export const MediaContentModel = getModelForClass(MediaContent);
 export const ParallelFilesUploadContentModel = getModelForClass(
 	ParallelFilesUploadContent
 );
-export const CommentContentModel = getModelForClass(Comment);
+export const CommentContentModel = getModelForClass(CommentContent);
+export const ReactionContentModel = getModelForClass(ReactionContent);

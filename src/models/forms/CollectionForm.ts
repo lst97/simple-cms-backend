@@ -18,11 +18,13 @@ export interface CollectionInfo {
 export class CollectionForm implements CollectionFormProps {
 	kind: 'collection' | 'post';
 	info: CollectionInfo;
+	ref?: string;
 	attributes: CollectionAttribute[] | Collection[];
 
-	constructor(kind?: 'collection' | 'post') {
+	constructor(kind?: 'collection' | 'post', ref?: string) {
 		this.kind = kind ?? 'collection';
 		this.info = { name: '', description: '', subdirectory: '' };
+		this.ref = ref;
 		this.attributes = [];
 	}
 }
