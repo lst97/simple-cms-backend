@@ -176,6 +176,13 @@ class CollectionService implements ICollectionService {
 				prefix = 'posts/';
 			}
 
+			// create a empty posts collection with the same slug as new collection
+			await this.postsService.createPostsCollection(
+				user.username,
+				form,
+				newCollection.slug
+			);
+
 			const newEndpoint = await this.endpointService.createEndpoint(
 				user.username,
 				prefix + form.info.subdirectory,
@@ -196,10 +203,7 @@ class CollectionService implements ICollectionService {
 			return newCollection;
 		} else {
 			// post, posts collection must be created.
-			if (
-				!form.ref ||
-				!(await this.collectionRepository.findBySlug(form.ref))
-			) {
+			if (!form.ref) {
 				const collectionCreationError = new DocumentCreationError({
 					message: 'Posts collection not found'
 				});
@@ -210,12 +214,27 @@ class CollectionService implements ICollectionService {
 				throw collectionCreationError;
 			}
 
-			const newCollection = await this.postsService.createPost(
+			const postsCollection = await this.collectionRepository.findBySlug(
+				form.ref
+			);
+
+			if (!postsCollection) {
+				const collectionCreationError = new DocumentCreationError({
+					message: 'Posts collection not found'
+				});
+				this.errorHandlerService.handleError({
+					error: collectionCreationError,
+					service: CollectionService.name
+				});
+				throw collectionCreationError;
+			}
+
+			const newPost = await this.postsService.createPost(
 				user.username,
 				form
 			);
 
-			if (!newCollection) {
+			if (!newPost) {
 				const collectionCreationError = new DocumentCreationError({
 					message: 'Collection creation failed'
 				});
@@ -226,7 +245,7 @@ class CollectionService implements ICollectionService {
 				throw collectionCreationError;
 			}
 
-			return newCollection;
+			return newPost;
 		}
 	}
 

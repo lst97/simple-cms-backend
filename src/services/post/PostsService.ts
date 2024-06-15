@@ -21,9 +21,9 @@ import PostsRepository from '../../repositories/post/PostsRepository';
 export class PostsService {
 	constructor(
 		@inject(CollectionRepository)
-		private CollectionRepository: CollectionRepository,
+		private collectionRepository: CollectionRepository,
 		@inject(PostsRepository)
-		private PostsRepository: PostsRepository
+		private postsRepository: PostsRepository
 	) {}
 
 	public async createPost(
@@ -36,7 +36,7 @@ export class PostsService {
 				query: { slug: form.ref }
 			});
 		}
-		const postsCollection = await this.CollectionRepository.findBySlug(
+		const postsCollection = await this.collectionRepository.findBySlug(
 			form.ref
 		);
 		if (!postsCollection) {
@@ -95,7 +95,7 @@ export class PostsService {
 			);
 		}
 
-		const updatedCollection = await this.PostsRepository.insertPost(
+		const updatedCollection = await this.postsRepository.insertPost(
 			form.ref,
 			post
 		);
@@ -109,4 +109,51 @@ export class PostsService {
 
 		return updatedCollection;
 	}
+
+	public async createPostsCollection(
+		username: string,
+		form: CollectionForm,
+		slug?: string
+	): Promise<Collection> {
+		const postsCollection = new Collection(username, form);
+		postsCollection.slug = slug ?? postsCollection.slug;
+		postsCollection.attributes = [];
+
+		const newPostsCollection =
+			await this.postsRepository.createPostsCollection(postsCollection);
+
+		if (!newPostsCollection) {
+			throw new DocumentReadError({
+				message: 'Posts collection not found',
+				query: { slug: form.ref }
+			});
+		}
+
+		return newPostsCollection;
+	}
+
+	public async findPosts(slug: string): Promise<Collection | null> {
+		const collection = await this.postsRepository.findPosts(slug);
+
+		if (!collection) {
+			throw new DocumentReadError({
+				message: 'Collection not found',
+				query: { slug }
+			});
+		}
+		return collection;
+	}
+
+	// public async findPost(slug: string): Promise<Collection | null> {
+	// 	const post = await this.CollectionRepository.findBySlug(slug);
+
+	// 	if (!post) {
+	// 		throw new DocumentReadError({
+	// 			message: 'Post not found',
+	// 			query: { slug }
+	// 		});
+	// 	}
+
+	// 	return post;
+	// }
 }

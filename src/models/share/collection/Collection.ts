@@ -55,12 +55,14 @@ export class Collection {
 	}
 }
 
-export class PostCollection extends Collection {
+export class PostsCollection extends Collection {
 	constructor(username: string, form: CollectionForm) {
 		super(username, form);
 		this.kind = 'post';
 		this.setting = form.info.setting;
+		this.attributes = [];
 	}
 }
 
 export const CollectionModel = getModelForClass(Collection);
+export const PostsCollectionModel = getModelForClass(PostsCollection);

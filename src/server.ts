@@ -27,6 +27,7 @@ import UserRoutes from './routes/UserRoutes';
 import PassportConfig from './configs/Passport.config';
 import EndpointRoutes from './routes/EndpointRoutes';
 import StorageRoutes from './routes/StorageRoutes';
+import PostsRoutes from './routes/PostsRoutes';
 @injectable()
 class App {
 	private app: express.Application;
@@ -98,6 +99,11 @@ class App {
 		this.app.use(
 			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(CollectionRoutes).routers
+		);
+
+		this.app.use(
+			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			container.get<IBaseRoutes>(PostsRoutes).routers
 		);
 
 		this.app.use(

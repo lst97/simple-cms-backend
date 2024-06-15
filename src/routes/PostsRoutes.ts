@@ -1,7 +1,7 @@
 import express from 'express';
 import { inject, injectable } from 'inversify';
 import IBaseRoutes from './IBaseRoutes';
-import EndpointController from '../controllers/endpoint/EndpointController';
+import PostsController from '../controllers/collection/PostsController';
 
 @injectable()
 class PostsRoutes implements IBaseRoutes {
@@ -12,8 +12,8 @@ class PostsRoutes implements IBaseRoutes {
 	}
 
 	constructor(
-		@inject(PostsCon)
-		private endpointController: EndpointController
+		@inject(PostsController)
+		private postsController: PostsController
 	) {
 		this.router = express.Router();
 		this.configureRoutes();
@@ -21,9 +21,9 @@ class PostsRoutes implements IBaseRoutes {
 
 	private configureRoutes(): void {
 		this.router.get(
-			'/endpoints/:slug',
+			'/posts/*',
 			(req: express.Request, res: express.Response) => {
-				this.endpointController.getEndpointByCollectionSlug(req, res);
+				this.postsController.getPostsCollection(req, res);
 			}
 		);
 	}

@@ -8,7 +8,12 @@ export class BaseContent {
 	public _id!: ObjectId;
 
 	@prop({ required: false })
-	public value?: string | MediaContent | MediaContent[] | Collection[];
+	public value?:
+		| string
+		| string[]
+		| MediaContent
+		| MediaContent[]
+		| Collection[];
 
 	@prop({ required: false })
 	sessionId?: string;

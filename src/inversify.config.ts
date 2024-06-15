@@ -31,6 +31,8 @@ import StorageRoutes from './routes/StorageRoutes';
 import StorageController from './controllers/storage/StorageController';
 import { PostsService } from './services/post/PostsService';
 import PostsRepository from './repositories/post/PostsRepository';
+import PostsRoutes from './routes/PostsRoutes';
+import PostsController from './controllers/collection/PostsController';
 
 const container = new Container();
 function buildLibContainers() {
@@ -65,6 +67,7 @@ function buildServiceContainers() {
 
 function buildControllerContainers() {
 	container.bind(CollectionController).toSelf().inTransientScope();
+	container.bind(PostsController).toSelf().inTransientScope();
 	container.bind(AuthenticateController).toSelf().inTransientScope();
 	container.bind(UserController).toSelf().inTransientScope();
 	container.bind(EndpointController).toSelf().inTransientScope();
@@ -75,6 +78,7 @@ function buildMiddlewareContainers() {}
 
 function buildRouterContainers() {
 	container.bind(CollectionRoutes).toSelf().inSingletonScope();
+	container.bind(PostsRoutes).toSelf().inSingletonScope();
 	container.bind(AuthenticateRoutes).toSelf().inSingletonScope();
 	container.bind(UserRoutes).toSelf().inSingletonScope();
 	container.bind(EndpointRoutes).toSelf().inSingletonScope();

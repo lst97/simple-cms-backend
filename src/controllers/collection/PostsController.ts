@@ -22,11 +22,12 @@ class PostsController {
 		@inject(ResponseService) private responseService: IResponseService
 	) {}
 
-	public async getPostsByPostsCollectionSlug(req: Request, res: Response) {
-		const slug = req.params.slug;
+	public async getPostsCollection(req: Request, res: Response) {
+		const prefix = req.params[0] as string;
+		const slug = prefix.split('/')[-1] ?? prefix;
 
 		try {
-			const postsModel = await this.postsService.findPostsBySlug(slug);
+			const postsModel = await this.postsService.findPosts(slug);
 
 			const commonResponse = this.responseService.buildSuccessResponse(
 				postsModel,
@@ -52,4 +53,4 @@ class PostsController {
 	}
 }
 
-export default EndpointController;
+export default PostsController;

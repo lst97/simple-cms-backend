@@ -3,10 +3,11 @@ import {
 	CollectionEndpoint,
 	CollectionEndpointModel
 } from '../../models/share/endpoint/Endpoint';
-import { DocumentCreationError } from '../../errors/Errors';
+import { DocumentCreationError, DocumentReadError } from '../../errors/Errors';
 import {
 	Collection,
-	CollectionModel
+	CollectionModel,
+	PostsCollectionModel
 } from '../../models/share/collection/Collection';
 
 // posts is a collection
@@ -19,11 +20,49 @@ class PostsRepository {
 		post: Collection
 	): Promise<Collection | null> {
 		try {
-			const collection = await CollectionModel.findOneAndUpdate(
+			const collection = PostsCollectionModel.findOneAndUpdate(
 				{ postsCollectionSlug },
 				{ $push: { attributes: post } },
 				{ new: true }
 			);
+			return collection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentCreationError({
+					message: error.message,
+					cause: error
+				});
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	async findPosts(slug: string): Promise<Collection | null> {
+		try {
+			const collection = PostsCollectionModel.findOne({
+				slug: slug
+			});
+
+			return collection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentReadError({
+					message: error.message,
+					query: { slug }
+				});
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	async createPostsCollection(
+		postsCollection: Collection
+	): Promise<Collection | null> {
+		try {
+			const collection = PostsCollectionModel.create(postsCollection);
+
 			return collection;
 		} catch (error) {
 			if (error instanceof Error) {
