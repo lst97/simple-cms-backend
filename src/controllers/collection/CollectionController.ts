@@ -233,10 +233,10 @@ class CollectionController implements ICollectionController {
 		const user = req.user as User;
 
 		// parallel upload
-		const sessionId = req.query.sessionId as string;
-		const total = req.query.total as string;
-		const groupId = req.query.groupId as string;
-		const type = req.query.type as MediaTypes;
+		const sessionId = req?.query?.sessionId as string | undefined;
+		const total = req?.query?.total as string | undefined;
+		const groupId = req?.query?.groupId as string | undefined;
+		const type = req?.query?.type as MediaTypes | undefined;
 
 		let updateAttributeContent: BaseContent | undefined = undefined;
 		let updateAttributeSetting: TypeSetting | undefined = undefined;
@@ -254,7 +254,7 @@ class CollectionController implements ICollectionController {
 			updateAttributeSetting = req.body.setting as TypeSetting;
 		}
 
-		if (sessionId && total) {
+		if (sessionId && total && groupId && type) {
 			parallelMetadata = {
 				sessionId: sessionId,
 				total: parseInt(total),

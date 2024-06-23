@@ -314,13 +314,7 @@ class CollectionService implements ICollectionService {
 			updateAttributeContent,
 			updateAttributeSetting
 		}: UpdateAttributeDataProps,
-		{
-			sessionId,
-			total,
-			nameMap,
-			groupId,
-			type
-		}: ParallelUploadMetadataProps
+		parallelUploadMetaData?: ParallelUploadMetadataProps
 	): Promise<Collection | null> {
 		const collection = await this.collectionRepository.findBySlug(slug);
 		this.validateCollectionAccess(collection, username);
@@ -346,7 +340,10 @@ class CollectionService implements ICollectionService {
 			updatedAttribute.setting =
 				updateAttributeSetting ?? updatedAttribute.setting;
 
-			if (sessionId && total) {
+			if (parallelUploadMetaData) {
+				const { sessionId, total, nameMap, groupId, type } =
+					parallelUploadMetaData;
+
 				let [key, value] = nameMap.entries().next().value;
 
 				await this.storageManagerService.received(
