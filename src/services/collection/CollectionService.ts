@@ -51,7 +51,7 @@ export interface ParallelUploadMetadataProps {
 	sessionId: string;
 	total: number;
 	nameMap: Map<string, string>;
-	groupId: string;
+	groupId?: string;
 	type: MediaTypes;
 }
 export interface ICollectionService {

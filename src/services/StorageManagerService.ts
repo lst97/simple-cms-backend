@@ -6,7 +6,7 @@ import multer from 'multer';
 import { ObjectId } from 'mongodb';
 import path from 'path';
 import { Request } from 'express';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import { User } from '../models/database/User';
 import { Mutex } from 'async-mutex';
 import { ServerResourceNotFoundError } from '@lst97/common-errors';
@@ -265,10 +265,8 @@ export class StorageManagerService implements IStorageManagerService {
 		}
 
 		// delete the temp folder
-		fs.rm(source, { recursive: true }, (err) => {
-			if (err) {
-				console.error(err);
-			}
+		fs.remove(source).catch((error) => {
+			console.error(error);
 		});
 	}
 }

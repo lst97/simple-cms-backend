@@ -235,7 +235,7 @@ class CollectionController implements ICollectionController {
 		// parallel upload
 		const sessionId = req?.query?.sessionId as string | undefined;
 		const total = req?.query?.total as string | undefined;
-		const groupId = req?.query?.groupId as string | undefined;
+		const groupId = req?.query?.groupId as string | undefined; // currently not in use
 		const type = req?.query?.type as MediaTypes | undefined;
 
 		let updateAttributeContent: BaseContent | undefined = undefined;
@@ -254,7 +254,7 @@ class CollectionController implements ICollectionController {
 			updateAttributeSetting = req.body.setting as TypeSetting;
 		}
 
-		if (sessionId && total && groupId && type) {
+		if (sessionId && total && sessionId && type) {
 			parallelMetadata = {
 				sessionId: sessionId,
 				total: parseInt(total),
