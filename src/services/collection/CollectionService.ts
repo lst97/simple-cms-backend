@@ -27,13 +27,6 @@ import {
 	StorageManagerService
 } from '../StorageManagerService';
 import { MediaTypes } from '../../schemas/collection/BaseSchema';
-import {
-	Mutex,
-	MutexInterface,
-	Semaphore,
-	SemaphoreInterface,
-	withTimeout
-} from 'async-mutex';
 import { PostsService } from '../post/PostsService';
 import { DocumentCreationError } from '../../errors/Errors';
 
@@ -77,7 +70,6 @@ export interface ICollectionService {
 		}: UpdateAttributeDataProps,
 		parallelUploadMetaData?: ParallelUploadMetadataProps
 	): Promise<Collection | null>;
-
 	update(
 		id: string,
 		updateData: Partial<Collection>
@@ -445,6 +437,31 @@ class CollectionService implements ICollectionService {
 			visibility,
 			isAttributeIncluded
 		);
+	}
+
+	async updateCollectionAttributes(
+		username: string,
+		slug: string,
+		attributes: CollectionAttribute[]
+	): Promise<Collection | null> {
+		const collection = await this.collectionRepository.findBySlug(slug);
+
+		this.validateCollectionAccess(collection, username);
+
+		for (const attribute of attributes) {
+			// todo: add partial error
+			attributes = collection?.attributes.filter(
+				(attr) => attr._id !== attribute._id
+			) as CollectionAttribute[];
+		}
+
+		const updatedCollection =
+			await this.collectionRepository.updateAttributesContent(
+				collection!._id!,
+				attributes
+			);
+
+		return updatedCollection;
 	}
 
 	async updateBySlug(

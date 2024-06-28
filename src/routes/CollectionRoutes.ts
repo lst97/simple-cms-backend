@@ -89,6 +89,17 @@ class CollectionRoutes implements IBaseRoutes {
 			}
 		);
 
+		// update collection attributes
+		this.router.put(
+			'/collections/:slug/attributes',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.collectionController.updateCollectionAttributes(req, res);
+			}
+		);
+
 		this.router.delete(
 			'/collections/:slug/attributes/:id',
 			passport.authenticate('jwt', {

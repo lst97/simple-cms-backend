@@ -24,6 +24,7 @@ import { BaseContent } from '../../models/share/collection/AttributeContents';
 import { TypeSetting } from '../../models/share/collection/AttributeTypeSettings';
 import { Collection } from '../../models/share/collection/Collection';
 import { MediaTypes } from '../../schemas/collection/BaseSchema';
+import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
 
 export interface ICollectionController {
 	createCollection(req: Request, res: Response): Promise<void>;
@@ -31,6 +32,7 @@ export interface ICollectionController {
 	getCollectionAttributes(req: Request, res: Response): Promise<void>;
 	updateCollection(req: Request, res: Response): Promise<void>;
 	updateCollectionAttribute(req: Request, res: Response): Promise<void>;
+	updateCollectionAttributes(req: Request, res: Response): Promise<void>;
 	deleteCollectionAttribute(req: Request, res: Response): Promise<void>;
 	addCollectionAttribute(req: Request, res: Response): Promise<void>;
 	getCollectionsByPrefixAndUsername(
@@ -276,6 +278,46 @@ class CollectionController implements ICollectionController {
 					},
 					parallelMetadata
 				);
+			const commonResponse = this.responseService.buildSuccessResponse(
+				collectionModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async updateCollectionAttributes(
+		req: Request,
+		res: Response
+	): Promise<void> {
+		const slug = req.params.slug;
+		const user = req.user as User;
+
+		const updateAttributes = req.body.attributes as CollectionAttribute[];
+
+		try {
+			const collectionModel =
+				await this.collectionService.updateAttributesContent(
+					user.username,
+					slug,
+					updateAttributes
+				);
+
 			const commonResponse = this.responseService.buildSuccessResponse(
 				collectionModel,
 				req.headers.requestId as string
