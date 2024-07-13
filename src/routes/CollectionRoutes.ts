@@ -133,6 +133,9 @@ class CollectionRoutes implements IBaseRoutes {
 
 		this.router.get(
 			'/collections/:slug',
+			passport.authenticate('jwt', {
+				session: false
+			}),
 			(req: express.Request, res: express.Response) => {
 				this.collectionController.getCollectionBySlug(req, res);
 			}

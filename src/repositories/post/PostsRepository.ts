@@ -38,7 +38,7 @@ class PostsRepository {
 		}
 	}
 
-	async findPosts(slug: string): Promise<Collection | null> {
+	async findPostsCollection(slug: string): Promise<Collection | null> {
 		try {
 			const collection = PostsCollectionModel.findOne({
 				slug: slug
@@ -69,6 +69,27 @@ class PostsRepository {
 				throw new DocumentCreationError({
 					message: error.message,
 					cause: error
+				});
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	async findPostsCollectionsByUsername(
+		username: string
+	): Promise<Collection[]> {
+		try {
+			const collections = PostsCollectionModel.find({
+				username
+			});
+
+			return collections;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentReadError({
+					message: error.message,
+					query: { username }
 				});
 			} else {
 				throw error;

@@ -16,6 +16,7 @@ import {
 } from '../../models/share/collection/AttributeContents';
 import { ObjectId } from 'mongodb';
 import PostsRepository from '../../repositories/post/PostsRepository';
+import EndpointService, { IEndpointService } from '../endpoint/EndpointService';
 
 @injectable()
 export class PostsService {
@@ -23,7 +24,9 @@ export class PostsService {
 		@inject(CollectionRepository)
 		private collectionRepository: CollectionRepository,
 		@inject(PostsRepository)
-		private postsRepository: PostsRepository
+		private postsRepository: PostsRepository,
+		@inject(EndpointService)
+		private endpointService: IEndpointService
 	) {}
 
 	public async createPost(
@@ -129,11 +132,34 @@ export class PostsService {
 			});
 		}
 
+		await this.endpointService.createEndpoint(
+			username,
+			'collections/posts/' + form.info.subdirectory,
+			newPostsCollection.slug
+		);
+
 		return newPostsCollection;
 	}
 
-	public async findPosts(slug: string): Promise<Collection | null> {
-		const collection = await this.postsRepository.findPosts(slug);
+	public async findPostsCollections(username: string): Promise<Collection[]> {
+		const collections =
+			await this.postsRepository.findPostsCollectionsByUsername(username);
+
+		if (!collections) {
+			throw new DocumentReadError({
+				message: 'Collections not found',
+				query: { username }
+			});
+		}
+
+		return collections;
+	}
+
+	public async findPosts(slug: string): Promise<Collection[] | null> {
+		const collection = await this.postsRepository.findPostsCollection(slug);
+
+		const postSlugs: string[] = [];
+		const posts: Collection[] = [];
 
 		if (!collection) {
 			throw new DocumentReadError({
@@ -141,19 +167,18 @@ export class PostsService {
 				query: { slug }
 			});
 		}
-		return collection;
+
+		if (collection.attributes.length > 0) {
+			for (const attribute of collection.attributes as CollectionAttribute[]) {
+				if (attribute.setting.type === 'post') {
+					postSlugs.push(attribute.content.value as string);
+				}
+			}
+
+			posts.push(
+				...(await this.collectionRepository.findBySlugs(postSlugs))
+			);
+		}
+		return posts;
 	}
-
-	// public async findPost(slug: string): Promise<Collection | null> {
-	// 	const post = await this.CollectionRepository.findBySlug(slug);
-
-	// 	if (!post) {
-	// 		throw new DocumentReadError({
-	// 			message: 'Post not found',
-	// 			query: { slug }
-	// 		});
-	// 	}
-
-	// 	return post;
-	// }
 }

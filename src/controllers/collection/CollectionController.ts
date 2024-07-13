@@ -25,6 +25,7 @@ import { TypeSetting } from '../../models/share/collection/AttributeTypeSettings
 import { Collection } from '../../models/share/collection/Collection';
 import { MediaTypes } from '../../schemas/collection/BaseSchema';
 import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
+import PostsController from './PostsController';
 
 export interface ICollectionController {
 	createCollection(req: Request, res: Response): Promise<void>;
@@ -49,6 +50,8 @@ class CollectionController implements ICollectionController {
 		private endpointService: IEndpointService,
 		@inject(CollectionService)
 		private collectionService: ICollectionService,
+		@inject(PostsController)
+		private postsController: PostsController,
 		@inject(ErrorHandlerService)
 		private errorHandlerService: IErrorHandlerService,
 		@inject(ResponseService) private responseService: IResponseService
@@ -121,7 +124,12 @@ class CollectionController implements ICollectionController {
 		req: Request,
 		res: Response
 	): Promise<void> {
-		const slug = req.params.slug as string;
+		const slug = req.params.slug;
+
+		if (slug === 'posts') {
+			this.postsController.getPostsCollections(req, res);
+			return;
+		}
 
 		try {
 			const collection = await this.collectionService.findBySlug(slug);

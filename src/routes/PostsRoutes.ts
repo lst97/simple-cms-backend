@@ -2,6 +2,7 @@ import express from 'express';
 import { inject, injectable } from 'inversify';
 import IBaseRoutes from './IBaseRoutes';
 import PostsController from '../controllers/collection/PostsController';
+import passport from 'passport';
 
 @injectable()
 class PostsRoutes implements IBaseRoutes {
@@ -21,9 +22,19 @@ class PostsRoutes implements IBaseRoutes {
 
 	private configureRoutes(): void {
 		this.router.get(
-			'/posts/*',
+			'/collections/posts/*',
 			(req: express.Request, res: express.Response) => {
-				this.postsController.getPostsCollection(req, res);
+				this.postsController.getPostsByPostsCollectionSlug(req, res);
+			}
+		);
+
+		this.router.post(
+			'/collections/posts',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.postsController.createPostsCollection(req, res);
 			}
 		);
 	}

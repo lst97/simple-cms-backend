@@ -1,7 +1,4 @@
 import { inject, injectable } from 'inversify';
-import EndpointService, {
-	IEndpointService
-} from '../../services/endpoint/EndpointService';
 import { Request, Response } from 'express';
 import { DefinedBaseError, ControllerError } from '@lst97/common-errors';
 import {
@@ -12,6 +9,7 @@ import {
 } from '@lst97/common_response';
 import CollectionController from '../collection/CollectionController';
 import { PostsService } from '../../services/post/PostsService';
+import { User } from '../../models/database/User';
 
 @injectable()
 class PostsController {
@@ -22,12 +20,76 @@ class PostsController {
 		@inject(ResponseService) private responseService: IResponseService
 	) {}
 
-	public async getPostsCollection(req: Request, res: Response) {
-		const prefix = req.params[0] as string;
+	public async getPostsByPostsCollectionSlug(req: Request, res: Response) {
+		const prefix = req.params[0];
 		const slug = prefix.split('/')[-1] ?? prefix;
 
 		try {
 			const postsModel = await this.postsService.findPosts(slug);
+
+			const commonResponse = this.responseService.buildSuccessResponse(
+				postsModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async getPostsCollections(req: Request, res: Response) {
+		const username = (req.user as User).username;
+
+		try {
+			const postsModel = await this.postsService.findPostsCollections(
+				username
+			);
+
+			const commonResponse = this.responseService.buildSuccessResponse(
+				postsModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async createPostsCollection(req: Request, res: Response) {
+		const form = req.body;
+		const username = (req.user as User).username;
+
+		try {
+			const postsModel = await this.postsService.createPostsCollection(
+				username,
+				form
+			);
 
 			const commonResponse = this.responseService.buildSuccessResponse(
 				postsModel,
