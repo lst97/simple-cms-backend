@@ -50,6 +50,41 @@ class PostsController {
 		}
 	}
 
+	public async createPost(req: Request, res: Response) {
+		const postsCollectionSlug = req.params.slug;
+		const form = req.body;
+		const username = (req.user as User).username;
+
+		try {
+			const postsModel = await this.postsService.createPost(
+				username,
+				form,
+				postsCollectionSlug
+			);
+
+			const commonResponse = this.responseService.buildSuccessResponse(
+				postsModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
 	public async getPostsCollections(req: Request, res: Response) {
 		const username = (req.user as User).username;
 

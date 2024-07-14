@@ -121,12 +121,16 @@ export class CommentContent extends BaseContent {
 }
 
 export class ReactionContent extends BaseContent {
+	@prop({ required: true })
+	postId!: ObjectId;
+
 	// 5 reaction types: Like, Love, Haha, Wow, Sad, Angry
-	@prop({ required: true, default: 0 })
+	@prop({ required: true, default: [[], [], [], [], []] })
 	reactionVotes!: [Vote[], Vote[], Vote[], Vote[], Vote[]];
 
-	constructor() {
+	constructor(postId: ObjectId) {
 		super();
+		this.postId = postId;
 		this.reactionVotes = [[], [], [], [], []];
 	}
 }

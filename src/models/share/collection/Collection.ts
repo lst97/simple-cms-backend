@@ -26,6 +26,9 @@ export class Collection {
 	collectionName!: string;
 
 	@prop({ required: false })
+	ref?: ObjectId;
+
+	@prop({ required: false })
 	description?: string;
 
 	@prop({ required: true })

@@ -50,7 +50,7 @@ export interface ParallelUploadMetadataProps {
 export interface ICollectionService {
 	create(
 		collectionData: CollectionForm,
-		createdBy: User
+		createdBy: string
 	): Promise<Collection | null>;
 	findBySlug(slug: string): Promise<Collection | null>;
 	findById(id: string): Promise<Collection | null>;
@@ -152,11 +152,14 @@ class CollectionService implements ICollectionService {
 		}
 	}
 
-	async create(form: CollectionForm, user: User): Promise<Collection | null> {
+	async create(
+		form: CollectionForm,
+		username: string
+	): Promise<Collection | null> {
 		// TODO: implement transaction
 		if (form.kind === 'collection') {
 			const newCollection = await this.collectionRepository.create(
-				new Collection(user.username, form)
+				new Collection(username, form)
 			);
 			let prefix = '';
 
@@ -170,13 +173,13 @@ class CollectionService implements ICollectionService {
 
 			// create a empty posts collection with the same slug as new collection
 			await this.postsService.createPostsCollection(
-				user.username,
+				username,
 				form,
 				newCollection.slug
 			);
 
 			const newEndpoint = await this.endpointService.createEndpoint(
-				user.username,
+				username,
 				prefix + form.info.subdirectory,
 				newCollection.slug
 			);
@@ -221,10 +224,7 @@ class CollectionService implements ICollectionService {
 				throw collectionCreationError;
 			}
 
-			const newPost = await this.postsService.createPost(
-				user.username,
-				form
-			);
+			const newPost = await this.postsService.createPost(username, form);
 
 			if (!newPost) {
 				const collectionCreationError = new DocumentCreationError({
@@ -404,7 +404,7 @@ class CollectionService implements ICollectionService {
 		return await this.collectionRepository.findByUsername(username);
 	}
 
-	private async findCollectionsBySlugs(
+	public async findCollectionsBySlugs(
 		slugs: string[],
 		visibility: 'public' | 'private' = 'public',
 		isAttributeIncluded = false

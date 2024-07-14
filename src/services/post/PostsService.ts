@@ -5,6 +5,7 @@ import { Collection } from '../../models/share/collection/Collection';
 import CollectionRepository from '../../repositories/collection/CollectionRepository';
 import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
 import {
+	AttributeSettingTypes,
 	CommentTypeSetting,
 	ReactionTypeSetting,
 	TextTypeSetting
@@ -17,12 +18,14 @@ import {
 import { ObjectId } from 'mongodb';
 import PostsRepository from '../../repositories/post/PostsRepository';
 import EndpointService, { IEndpointService } from '../endpoint/EndpointService';
+import { ValidationError } from '@lst97/common-errors';
+import CollectionService from '../collection/CollectionService';
 
 @injectable()
 export class PostsService {
 	constructor(
-		@inject(CollectionRepository)
-		private collectionRepository: CollectionRepository,
+		@inject(CollectionService)
+		private collectionService: CollectionService,
 		@inject(PostsRepository)
 		private postsRepository: PostsRepository,
 		@inject(EndpointService)
@@ -31,83 +34,51 @@ export class PostsService {
 
 	public async createPost(
 		username: string,
-		form: CollectionForm
+		form: CollectionForm,
+		slug?: string // posts collection slug
 	): Promise<Collection> {
-		if (!form.ref) {
-			throw new DocumentReadError({
-				message: 'Posts collection not found',
-				query: { slug: form.ref }
-			});
-		}
-		const postsCollection = await this.collectionRepository.findBySlug(
-			form.ref
-		);
-		if (!postsCollection) {
-			throw new DocumentReadError({
-				message: 'Post collection not found',
-				query: { slug: form.ref }
-			});
-		}
+		if (slug) {
+			const postsCollection =
+				await this.postsRepository.findPostsCollection(slug);
 
-		const post = new Collection(username, form);
+			if (!postsCollection) {
+				throw new DocumentReadError({
+					message: 'Posts collection not found',
+					query: { slug }
+				});
+			}
 
-		const attributes: CollectionAttribute[] = [];
-
-		// insert comment and reaction attributes if it's a post
-		if (form.kind === 'post') {
-			const titleTextSetting = new TextTypeSetting(
-				'Title',
-				'text',
-				{},
-				{ textType: 'short_text' }
-			);
-			const postContentSetting = new TextTypeSetting(
-				'Content',
-				'text',
-				{},
-				{ textType: 'reach_text' }
-			);
-			const commentSetting = new CommentTypeSetting(
-				'Comment',
-				'comment',
-				{}
-			);
-			const commentContent = new CommentContent(
-				new ObjectId(form.ref),
-				username
+			// validate if frontend provide valid attributes for post
+			// should have Title, Content, optional: Comment, Reaction
+			const postAttributes =
+				form.attributes as unknown as CollectionAttribute[];
+			const title = postAttributes.find(
+				(attribute) =>
+					attribute.setting.type === 'text' &&
+					attribute.setting.name === 'Title'
 			);
 
-			const reactionSetting = new ReactionTypeSetting(
-				'Reaction',
-				'reaction',
-				{}
+			const content = postAttributes.find(
+				(attribute) =>
+					attribute.setting.type === 'text' &&
+					attribute.setting.name === 'Content'
 			);
-			const reactionContent = new ReactionContent();
 
-			attributes.push(
-				new CollectionAttribute(titleTextSetting, new BaseContent(''))
-			);
-			attributes.push(
-				new CollectionAttribute(postContentSetting, new BaseContent(''))
-			);
-			attributes.push(
-				new CollectionAttribute(commentSetting, commentContent)
-			);
-			attributes.push(
-				new CollectionAttribute(reactionSetting, reactionContent)
-			);
-		}
+			if (!title || !content) {
+				throw new ValidationError({
+					message: 'Post should have title and content'
+				});
+			}
 
-		const updatedCollection = await this.postsRepository.insertPost(
-			form.ref,
-			post
-		);
+			// TODO: check comment and reaction
 
-		if (!updatedCollection) {
-			throw new DocumentReadError({
-				message: 'Post collection not found',
-				query: { slug: form.ref }
-			});
+			// Step 1: Create collection
+			// Step 2: Update Posts collection with new post slug
+			const post = new Collection(username, form);
+			const newPost = await this.collectionService.create(form, username);
+
+			await this.postsRepository.insertPost(slug, newPost);
+		} else {
 		}
 
 		return updatedCollection;
@@ -176,7 +147,9 @@ export class PostsService {
 			}
 
 			posts.push(
-				...(await this.collectionRepository.findBySlugs(postSlugs))
+				...(await this.collectionService.findCollectionsBySlugs(
+					postSlugs
+				))
 			);
 		}
 		return posts;
