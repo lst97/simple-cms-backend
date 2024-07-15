@@ -182,29 +182,34 @@ export class TextTypeSetting extends TypeSetting {
 }
 
 export interface PostCollectionSetting {
-	comment: boolean;
-	reaction: boolean;
+	comment?: string;
+	reaction?: string;
 }
 
 export class PostTypeSetting extends TypeSetting {
-	@prop({ required: true })
-	public comment: boolean;
-	@prop({ required: true })
-	public reaction: boolean;
+	@prop({ required: false })
+	public category?: string;
+	@prop({ required: false })
+	public tags?: string[];
+	@prop({ required: false })
+	public comment?: string;
+	@prop({ required: false })
+	public reaction?: string;
 
 	constructor(
-		name: string,
-		type: SupportedAttributeTypes,
-		{
-			required = false,
-			unique = false,
-			isPrivate = false
-		}: TypeSettingProps,
-		{ comment = false, reaction = false }: PostTypeSetting
+		title: string,
+		advancedOption?: TypeSettingProps,
+		baseOptions?: PostCollectionSetting
 	) {
-		super(name, 'post', { required, unique, isPrivate });
-		this.comment = comment;
-		this.reaction = reaction;
+		super(title, 'post', {
+			required: advancedOption?.required ?? false,
+			unique: advancedOption?.unique ?? false,
+			isPrivate: advancedOption?.isPrivate ?? false
+		});
+		if (baseOptions) {
+			this.comment = baseOptions.comment;
+			this.reaction = baseOptions.reaction;
+		}
 	}
 }
 

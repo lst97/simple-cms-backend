@@ -1,31 +1,23 @@
 import { inject, injectable } from 'inversify';
-import { DocumentReadError } from '../../errors/Errors';
+import { DocumentCreationError, DocumentReadError } from '../../errors/Errors';
 import { CollectionForm } from '../../models/forms/CollectionForm';
-import { Collection } from '../../models/share/collection/Collection';
+import {
+	Collection,
+	PostCollection
+} from '../../models/share/collection/Collection';
 import CollectionRepository from '../../repositories/collection/CollectionRepository';
 import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
-import {
-	AttributeSettingTypes,
-	CommentTypeSetting,
-	ReactionTypeSetting,
-	TextTypeSetting
-} from '../../models/share/collection/AttributeTypeSettings';
-import {
-	BaseContent,
-	CommentContent,
-	ReactionContent
-} from '../../models/share/collection/AttributeContents';
-import { ObjectId } from 'mongodb';
 import PostsRepository from '../../repositories/post/PostsRepository';
 import EndpointService, { IEndpointService } from '../endpoint/EndpointService';
 import { ValidationError } from '@lst97/common-errors';
-import CollectionService from '../collection/CollectionService';
+import { PostTypeSetting } from '../../models/share/collection/AttributeTypeSettings';
+import { BaseContent } from '../../models/share/collection/AttributeContents';
 
 @injectable()
 export class PostsService {
 	constructor(
-		@inject(CollectionService)
-		private collectionService: CollectionService,
+		@inject(CollectionRepository)
+		private collectionRepository: CollectionRepository,
 		@inject(PostsRepository)
 		private postsRepository: PostsRepository,
 		@inject(EndpointService)
@@ -47,41 +39,65 @@ export class PostsService {
 					query: { slug }
 				});
 			}
-
-			// validate if frontend provide valid attributes for post
-			// should have Title, Content, optional: Comment, Reaction
-			const postAttributes =
-				form.attributes as unknown as CollectionAttribute[];
-			const title = postAttributes.find(
-				(attribute) =>
-					attribute.setting.type === 'text' &&
-					attribute.setting.name === 'Title'
-			);
-
-			const content = postAttributes.find(
-				(attribute) =>
-					attribute.setting.type === 'text' &&
-					attribute.setting.name === 'Content'
-			);
-
-			if (!title || !content) {
-				throw new ValidationError({
-					message: 'Post should have title and content'
-				});
-			}
-
-			// TODO: check comment and reaction
-
-			// Step 1: Create collection
-			// Step 2: Update Posts collection with new post slug
-			const post = new Collection(username, form);
-			const newPost = await this.collectionService.create(form, username);
-
-			await this.postsRepository.insertPost(slug, newPost);
-		} else {
 		}
 
-		return updatedCollection;
+		// validate if frontend provide valid attributes for post
+		// should have Title, Content, optional: Comment, Reaction
+		const postAttributes =
+			form.attributes as unknown as CollectionAttribute[];
+		const title = postAttributes.find(
+			(attribute) =>
+				attribute.setting.type === 'text' &&
+				attribute.setting.name === 'Title'
+		);
+
+		const content = postAttributes.find(
+			(attribute) =>
+				attribute.setting.type === 'text' &&
+				attribute.setting.name === 'Content'
+		);
+
+		if (!title || !content) {
+			throw new ValidationError({
+				message: 'Post should have title and content'
+			});
+		}
+
+		// TODO: check comment and reaction
+
+		// Step 1: Create collection
+		// Step 2: Update Posts collection with new post slug
+
+		const newPost = await this.collectionRepository.create(
+			new PostCollection(username, form)
+		);
+
+		if (newPost) {
+			if (slug) {
+				const newPostsCollectionAttribute = new CollectionAttribute(
+					newPost.setting as PostTypeSetting,
+					new BaseContent(newPost.slug)
+				);
+
+				await this.postsRepository.insertPost(
+					slug,
+					newPostsCollectionAttribute
+				);
+
+				await this.endpointService.createEndpoint(
+					username,
+					'posts/' + form.info.subdirectory,
+					newPost.slug
+				);
+			}
+
+			return newPost;
+		} else {
+			throw new DocumentCreationError({
+				message: 'Can not create post',
+				query: { slug: form.ref }
+			});
+		}
 	}
 
 	public async createPostsCollection(
@@ -126,6 +142,19 @@ export class PostsService {
 		return collections;
 	}
 
+	public async findPost(slug: string): Promise<Collection | null> {
+		const post = await this.collectionRepository.findBySlug(slug);
+
+		if (!post) {
+			throw new DocumentReadError({
+				message: 'Post not found',
+				query: { slug }
+			});
+		}
+
+		return post;
+	}
+
 	public async findPosts(slug: string): Promise<Collection[] | null> {
 		const collection = await this.postsRepository.findPostsCollection(slug);
 
@@ -147,9 +176,7 @@ export class PostsService {
 			}
 
 			posts.push(
-				...(await this.collectionService.findCollectionsBySlugs(
-					postSlugs
-				))
+				...(await this.collectionRepository.findBySlugs(postSlugs))
 			);
 		}
 		return posts;

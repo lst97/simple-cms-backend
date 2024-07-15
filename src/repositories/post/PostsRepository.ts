@@ -9,6 +9,9 @@ import {
 	CollectionModel,
 	PostsCollectionModel
 } from '../../models/share/collection/Collection';
+import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
+import { BaseContent } from '../../models/share/collection/AttributeContents';
+import { PostTypeSetting } from '../../models/share/collection/AttributeTypeSettings';
 
 // posts is a collection
 @injectable()
@@ -17,12 +20,12 @@ class PostsRepository {
 
 	async insertPost(
 		postsCollectionSlug: string,
-		post: Collection
+		postAttribute: CollectionAttribute
 	): Promise<Collection | null> {
 		try {
 			const collection = PostsCollectionModel.findOneAndUpdate(
-				{ postsCollectionSlug },
-				{ $push: { attributes: post } },
+				{ slug: postsCollectionSlug },
+				{ $push: { attributes: postAttribute } },
 				{ new: true }
 			);
 			return collection;

@@ -47,6 +47,13 @@ class PostsRoutes implements IBaseRoutes {
 				this.postsController.createPost(req, res);
 			}
 		);
+
+		this.router.get(
+			'/posts/:slug',
+			(req: express.Request, res: express.Response) => {
+				this.postsController.getPost(req, res);
+			}
+		);
 	}
 }
 

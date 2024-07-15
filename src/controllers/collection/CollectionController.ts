@@ -59,11 +59,12 @@ class CollectionController implements ICollectionController {
 
 	public async createCollection(req: Request, res: Response): Promise<void> {
 		const createCollectionForm = req.body as CollectionForm;
+		const username = (req.user as User).username;
 
 		try {
 			const collectionModel = await this.collectionService.create(
 				createCollectionForm,
-				req.user as User
+				username
 			);
 			const commonResponse = this.responseService.buildSuccessResponse(
 				collectionModel,

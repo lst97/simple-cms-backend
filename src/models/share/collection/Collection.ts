@@ -15,7 +15,7 @@ export class Collection {
 	_id?: ObjectId = new ObjectId();
 
 	@prop({ required: true })
-	kind!: 'collection' | 'post';
+	kind!: 'collection' | 'post' | 'posts';
 
 	@prop({ required: true })
 	username!: string;
@@ -35,7 +35,7 @@ export class Collection {
 	slug!: string;
 
 	@prop({ required: false })
-	setting?: PostCollectionSetting;
+	setting?: PostTypeSetting;
 
 	@prop({ type: () => CollectionAttribute })
 	attributes: CollectionAttribute[] | Collection[] = [];
@@ -61,9 +61,16 @@ export class Collection {
 export class PostsCollection extends Collection {
 	constructor(username: string, form: CollectionForm) {
 		super(username, form);
-		this.kind = 'post';
-		this.setting = form.info.setting;
+		this.kind = 'posts';
 		this.attributes = [];
+	}
+}
+
+export class PostCollection extends Collection {
+	constructor(username: string, form: CollectionForm) {
+		super(username, form);
+		this.kind = 'post';
+		this.setting = new PostTypeSetting(form.info.name);
 	}
 }
 
