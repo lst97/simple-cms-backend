@@ -90,7 +90,7 @@ class CollectionController implements ICollectionController {
 	}
 
 	public async deleteCollection(req: Request, res: Response): Promise<void> {
-		const slug = req.params.slug as string;
+		const slug = req.params.slug;
 		const username = (req.user as User).username;
 
 		try {

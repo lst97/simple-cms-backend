@@ -1,30 +1,40 @@
-import { PostCollectionSetting } from '../share/collection/AttributeTypeSettings';
-import { Collection } from '../share/collection/Collection';
+import { SupportedCollectionKind } from '../share/collection/Collection';
 import { CollectionAttribute } from '../share/collection/CollectionAttributes';
 
 interface CollectionFormProps {
-	kind: 'collection' | 'post';
+	kind: 'collection' | 'post' | 'posts';
 	info: CollectionInfo;
-	attributes: CollectionAttribute[] | Collection[];
+	attributes: CollectionAttribute[];
+	ref?: string;
 }
 
 export interface CollectionInfo {
 	name: string;
 	description: string;
 	subdirectory: string;
-	setting?: PostCollectionSetting;
 }
 
 export class CollectionForm implements CollectionFormProps {
-	kind: 'collection' | 'post';
+	kind: 'collection' | 'post' | 'posts';
 	info: CollectionInfo;
+	attributes: CollectionAttribute[];
 	ref?: string;
-	attributes: CollectionAttribute[] | Collection[];
 
-	constructor(kind?: 'collection' | 'post', ref?: string) {
-		this.kind = kind ?? 'collection';
+	constructor(kind: SupportedCollectionKind) {
+		this.kind = kind;
 		this.info = { name: '', description: '', subdirectory: '' };
-		this.ref = ref;
 		this.attributes = [];
+	}
+
+	public setCollectionInfo({
+		name,
+		description,
+		subdirectory
+	}: CollectionInfo) {
+		this.info = { name, description, subdirectory };
+	}
+
+	public addAttribute(attribute: CollectionAttribute) {
+		this.attributes.push(attribute);
 	}
 }

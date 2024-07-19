@@ -39,6 +39,8 @@ export class PostsService {
 					query: { slug }
 				});
 			}
+
+			form.ref = slug;
 		}
 
 		// validate if frontend provide valid attributes for post

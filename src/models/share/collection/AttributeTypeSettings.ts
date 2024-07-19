@@ -127,28 +127,26 @@ export class TypeSetting {
 export class CommentTypeSetting extends TypeSetting {
 	constructor(
 		name: string,
-		type: SupportedAttributeTypes,
 		{
 			required = false,
 			unique = false,
 			isPrivate = false
 		}: TypeSettingProps
 	) {
-		super(name, type, { required, unique, isPrivate });
+		super(name, 'comment', { required, unique, isPrivate });
 	}
 }
 
 export class ReactionTypeSetting extends TypeSetting {
 	constructor(
 		name: string,
-		type: SupportedAttributeTypes,
 		{
 			required = false,
 			unique = false,
 			isPrivate = false
 		}: TypeSettingProps
 	) {
-		super(name, type, { required, unique, isPrivate });
+		super(name, 'reaction', { required, unique, isPrivate });
 	}
 }
 
@@ -162,7 +160,6 @@ export class TextTypeSetting extends TypeSetting {
 
 	constructor(
 		name: string,
-		type: SupportedAttributeTypes,
 		{
 			required = false,
 			unique = false,

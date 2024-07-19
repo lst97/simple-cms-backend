@@ -10,6 +10,8 @@ import {
 } from './AttributeTypeSettings';
 import { CommentContent } from './AttributeContents';
 
+export type SupportedCollectionKind = 'collection' | 'post' | 'posts';
+
 export class Collection {
 	@prop({ required: false, default: new ObjectId() })
 	_id?: ObjectId = new ObjectId();
@@ -26,7 +28,7 @@ export class Collection {
 	collectionName!: string;
 
 	@prop({ required: false })
-	ref?: ObjectId;
+	ref?: string; // slug // TODO: change to ref with ObjectId
 
 	@prop({ required: false })
 	description?: string;
@@ -38,7 +40,7 @@ export class Collection {
 	setting?: PostTypeSetting;
 
 	@prop({ type: () => CollectionAttribute })
-	attributes: CollectionAttribute[] | Collection[] = [];
+	attributes: CollectionAttribute[] = [];
 
 	@prop({ default: Date.now })
 	createdAt!: Date;
@@ -71,6 +73,7 @@ export class PostCollection extends Collection {
 		super(username, form);
 		this.kind = 'post';
 		this.setting = new PostTypeSetting(form.info.name);
+		this.ref = form.ref!;
 	}
 }
 
