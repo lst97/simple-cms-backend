@@ -22,7 +22,7 @@ export interface IEndpointService {
 		prefix: string,
 		visibility?: 'public' | 'private'
 	): Promise<string[] | null>;
-	deleteEndpointBySlug(username: string, slug: string): Promise<boolean>;
+	deleteEndpointBySlug(slug: string): Promise<boolean>;
 }
 
 @injectable()
@@ -83,12 +83,8 @@ class EndpointService {
 		);
 	}
 
-	public async deleteEndpointBySlug(
-		username: string,
-		slug: string
-	): Promise<boolean> {
+	public async deleteEndpointBySlug(slug: string): Promise<boolean> {
 		return await this.endpointRepository.deleteCollectionEndpointBySlug(
-			username,
 			slug
 		);
 	}

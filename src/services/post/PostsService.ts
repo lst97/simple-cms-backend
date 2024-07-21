@@ -1,5 +1,9 @@
 import { inject, injectable } from 'inversify';
-import { DocumentCreationError, DocumentReadError } from '../../errors/Errors';
+import {
+	DocumentCreationError,
+	DocumentDeletionError,
+	DocumentReadError
+} from '../../errors/Errors';
 import { CollectionForm } from '../../models/forms/CollectionForm';
 import {
 	Collection,
@@ -144,7 +148,7 @@ export class PostsService {
 		return collections;
 	}
 
-	public async findPost(slug: string): Promise<Collection | null> {
+	public async findPost(slug: string): Promise<Collection> {
 		const post = await this.collectionRepository.findBySlug(slug);
 
 		if (!post) {
@@ -157,7 +161,7 @@ export class PostsService {
 		return post;
 	}
 
-	public async findPosts(slug: string): Promise<Collection[] | null> {
+	public async findPosts(slug: string): Promise<Collection[]> {
 		const collection = await this.postsRepository.findPostsCollection(slug);
 
 		const postSlugs: string[] = [];
@@ -182,5 +186,64 @@ export class PostsService {
 			);
 		}
 		return posts;
+	}
+
+	public async deletePost(slug: string): Promise<Boolean> {
+		const post = await this.collectionRepository.findBySlug(slug);
+
+		if (!post) {
+			throw new DocumentReadError({
+				message: 'Post not found',
+				query: { slug }
+			});
+		}
+
+		// TODO: transaction
+		// 1. delete endpoint
+		if (!(await this.endpointService.deleteEndpointBySlug(post.slug))) {
+			throw new DocumentDeletionError({
+				message: 'Can not delete post',
+				query: { slug }
+			});
+		}
+
+		// 2. delete attribute from PostsCollection if exist (check ref)
+		if (post.ref) {
+			await this.postsRepository.deletePostsCollectionAttributeBySlug(
+				post.ref,
+				post.slug
+			);
+		}
+
+		// 3. delete the actual post
+		const deletedPost = await this.collectionRepository.delete(post._id!);
+
+		if (!deletedPost) {
+			throw new DocumentDeletionError({
+				message: 'Can not delete post',
+				query: { slug }
+			});
+		}
+
+		return deletedPost;
+	}
+
+	public async updatePost(
+		slug: string,
+		form: CollectionForm
+	): Promise<Collection> {
+		const originPost = await this.collectionRepository.findBySlug(slug);
+
+		if (!originPost) {
+			throw new DocumentReadError({
+				message: 'Post not found',
+				query: { slug }
+			});
+		}
+
+		// assign form value to origin post
+		originPost.collectionName = form.info.name;
+
+		return originPost;
 	}
 }

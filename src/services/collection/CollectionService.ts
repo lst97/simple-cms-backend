@@ -273,7 +273,7 @@ class CollectionService implements ICollectionService {
 		);
 
 		if (isDeleted) {
-			await this.endpointService.deleteEndpointBySlug(username, slug);
+			await this.endpointService.deleteEndpointBySlug(slug);
 		}
 
 		return isDeleted;

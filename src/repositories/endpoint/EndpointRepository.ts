@@ -20,10 +20,7 @@ export interface IEndpointRepository {
 		prefix: string,
 		visibility: 'public' | 'private'
 	): Promise<CollectionEndpoint[] | null>;
-	deleteCollectionEndpointBySlug(
-		username: string,
-		slug: string
-	): Promise<boolean>;
+	deleteCollectionEndpointBySlug(slug: string): Promise<boolean>;
 }
 @injectable()
 class EndpointRepository {
@@ -68,12 +65,8 @@ class EndpointRepository {
 		}).exec();
 	}
 
-	async deleteCollectionEndpointBySlug(
-		username: string,
-		slug: string
-	): Promise<boolean> {
+	async deleteCollectionEndpointBySlug(slug: string): Promise<boolean> {
 		const result = await CollectionEndpointModel.deleteOne({
-			username: username,
 			slug: slug
 		});
 		return result.deletedCount === 1;

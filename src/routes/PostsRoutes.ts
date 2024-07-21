@@ -54,6 +54,26 @@ class PostsRoutes implements IBaseRoutes {
 				this.postsController.getPost(req, res);
 			}
 		);
+
+		this.router.delete(
+			'/posts/:slug',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.postsController.deletePost(req, res);
+			}
+		);
+
+		this.router.put(
+			'/posts/:slug',
+			passport.authenticate('jwt', {
+				session: false
+			}),
+			(req: express.Request, res: express.Response) => {
+				this.postsController.updatePost(req, res);
+			}
+		);
 	}
 }
 

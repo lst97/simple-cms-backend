@@ -177,6 +177,65 @@ class PostsController {
 			res.status(commonResponse.httpStatus).json(commonResponse.response);
 		}
 	}
+
+	public async deletePost(req: Request, res: Response) {
+		const slug = req.params.slug;
+
+		try {
+			const postsModel = await this.postsService.deletePost(slug);
+
+			const commonResponse = this.responseService.buildSuccessResponse(
+				postsModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
+
+	public async updatePost(req: Request, res: Response) {
+		const slug = req.params.slug;
+		const form = req.body;
+
+		try {
+			const postsModel = await this.postsService.updatePost(slug, form);
+
+			const commonResponse = this.responseService.buildSuccessResponse(
+				postsModel,
+				req.headers.requestId as string
+			);
+
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		} catch (error) {
+			if (!(error instanceof DefinedBaseError)) {
+				this.errorHandlerService.handleUnknownControllerError({
+					error: error as Error,
+					service: CollectionController.name,
+					errorType: ControllerError
+				});
+			}
+
+			const commonResponse = this.responseService.buildErrorResponse(
+				error as Error,
+				req.id
+			);
+			res.status(commonResponse.httpStatus).json(commonResponse.response);
+		}
+	}
 }
 
 export default PostsController;

@@ -1,17 +1,10 @@
 import { injectable } from 'inversify';
-import {
-	CollectionEndpoint,
-	CollectionEndpointModel
-} from '../../models/share/endpoint/Endpoint';
 import { DocumentCreationError, DocumentReadError } from '../../errors/Errors';
 import {
 	Collection,
-	CollectionModel,
 	PostsCollectionModel
 } from '../../models/share/collection/Collection';
 import { CollectionAttribute } from '../../models/share/collection/CollectionAttributes';
-import { BaseContent } from '../../models/share/collection/AttributeContents';
-import { PostTypeSetting } from '../../models/share/collection/AttributeTypeSettings';
 
 // posts is a collection
 @injectable()
@@ -93,6 +86,34 @@ class PostsRepository {
 				throw new DocumentReadError({
 					message: error.message,
 					query: { username }
+				});
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	async deletePostsCollectionAttributeBySlug(
+		postsCollectionSlug: string,
+		postSlug: string
+	) {
+		try {
+			const collection = PostsCollectionModel.findOneAndUpdate(
+				{ slug: postsCollectionSlug },
+				{
+					$pull: {
+						attributes: { 'content.value': postSlug }
+					}
+				},
+				{ new: true }
+			);
+
+			return collection;
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new DocumentCreationError({
+					message: error.message,
+					cause: error
 				});
 			} else {
 				throw error;
