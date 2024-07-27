@@ -4,6 +4,7 @@
 		"letsencrypt",
 		"maxlength",
 		"pino",
+		"privkey",
 		"tplinkdns",
 		"uuidv"
 	],
