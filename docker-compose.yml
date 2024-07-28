@@ -6,9 +6,6 @@ services:
             - '1168:1168'
         depends_on:
             - mongo
-        environment:
-            - BCRYPT_SALT_ROUNDS=${BCRYPT_SALT_ROUNDS}
-            - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
         volumes:
             - ~/app:/app:ro
 

@@ -40,8 +40,9 @@ jobs:
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
                       cd ~/app
-                      export BCRYPT_SALT_ROUNDS="${{ secrets.BCRYPT_SALT_ROUNDS }}" && \
-                      export ACCESS_TOKEN_SECRET="${{ secrets.ACCESS_TOKEN_SECRET }}"
+                      echo "BCRYPT_SALT_ROUNDS=${{ secrets.BCRYPT_SALT_ROUNDS }}" > .env
+                      echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
                       docker-compose pull
                       docker-compose down
                       docker-compose up -d
+                      docker cp ./.env app-simply-cms-backend-1:/usr/src/app
