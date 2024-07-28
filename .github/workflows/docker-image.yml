@@ -24,7 +24,7 @@ jobs:
             - name: Copy docker-compose.yml to server
               uses: appleboy/scp-action@master
               with:
-                  host: ${{ secrets.SERVER_HOST }}
+                  host: 'lst97.tplinkdns.com'
                   username: ${{ secrets.SERVER_USERNAME }}
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   source: 'docker-compose.yml'
@@ -33,7 +33,7 @@ jobs:
             - name: Copy Dockerfile to server
               uses: appleboy/scp-action@master
               with:
-                  host: ${{ secrets.SERVER_HOST }}
+                  host: 'lst97.tplinkdns.com'
                   username: ${{ secrets.SERVER_USERNAME }}
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   source: 'Dockerfile'
@@ -42,7 +42,7 @@ jobs:
             - name: Deploy to server
               uses: appleboy/ssh-action@master
               with:
-                  host: ${{ secrets.SERVER_HOST }}
+                  host: 'lst97.tplinkdns.com'
                   username: ${{ secrets.SERVER_USERNAME }}
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
