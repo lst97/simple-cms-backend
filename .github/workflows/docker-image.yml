@@ -16,6 +16,8 @@ jobs:
                   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
                   DOCKER_HUB_ACCESS_TOKEN:
                       ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+                  ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+                  BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
               run: |
                   echo $DOCKER_HUB_ACCESS_TOKEN | docker login -u $DOCKER_HUB_USERNAME --password-stdin
                   docker build -t $DOCKER_HUB_USERNAME/simple-cms-backend:dev .
@@ -38,6 +40,8 @@ jobs:
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
                       cd ~/app
+                      echo "BCRYPT_SALT_ROUNDS=${{ secrets.BCRYPT_SALT_ROUNDS }}" > .env
+                      echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
                       docker-compose pull
                       docker-compose down
                       docker-compose up -d

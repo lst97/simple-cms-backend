@@ -1,6 +1,12 @@
 # Use an official Node.js runtime as the base image
 FROM node:20.0.0
 
+ARG BCRYPT_SALT_ROUNDS
+ARG ACCESS_TOKEN_SECRET
+
+ENV BCRYPT_SALT_ROUNDS=$BCRYPT_SALT_ROUNDS
+ENV ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET
+
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
