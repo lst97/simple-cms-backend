@@ -4,8 +4,10 @@
 		"inversify",
 		"letsencrypt",
 		"maxlength",
+		"nameserver",
 		"pino",
 		"privkey",
+		"resolv",
 		"tplinkdns",
 		"uuidv"
 	],
