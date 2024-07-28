@@ -41,7 +41,6 @@ jobs:
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
                       mkdir -p ~/app
-                      cp docker-compose.yml ~/app/docker-compose.yml
                       cd ~/app
                       docker-compose pull
                       docker-compose up -d
