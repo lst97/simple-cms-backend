@@ -8,7 +8,7 @@ import {
 	ErrorHandlerService,
 	IErrorHandlerService
 } from '@lst97/common_response';
-import appConfig from '../configs/Config';
+import appConfig from '../configs/config';
 
 const closeMongoConnection = async (client: MongoClient): Promise<void> => {
 	try {

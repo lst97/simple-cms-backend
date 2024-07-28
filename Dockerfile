@@ -10,6 +10,8 @@ COPY package*.json ./
 # Install the application dependencies
 RUN npm install
 
+RUN npm run build
+
 # Copy the rest of the application code
 COPY . ./
 
@@ -17,4 +19,4 @@ COPY . ./
 EXPOSE 1168
 
 # Define the command to run the app
-CMD ["node", "server.js"]
+CMD ["node", "dist/server.js"]

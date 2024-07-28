@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import appConfig, { IAppConfig } from './configs/Config';
+import appConfig, { IAppConfig } from './configs/config';
 import Credentials from './configs/credentials';
 import https from 'https';
 import { Config as CommonResponseConfig } from '@lst97/common_response';
