@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-    app:
+    simple-cms-backend:
         image: lst97/simple-cms-backend:dev
         ports:
             - '1168:1168'
@@ -12,7 +12,7 @@ services:
             - ~/app:/app:ro
 
     mongo:
-        image: mongo:latest
+        image: arm64v8/mongo:4.4.18
         ports:
             - '27017:27017'
         volumes:
