@@ -17,4 +17,4 @@ COPY . ./
 EXPOSE 1168
 
 # Define the command to run the app
-CMD ["node", "dist/server.js"]
+CMD ["node", "server.js"]
