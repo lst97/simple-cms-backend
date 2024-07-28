@@ -21,8 +21,8 @@ jobs:
                       ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
               run: |
                   echo $DOCKER_HUB_ACCESS_TOKEN | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-                  docker-compose build
-                  docker-compose push
+                  docker build -t $DOCKER_HUB_USERNAME/simple-cms:dev .
+                  docker push $DOCKER_HUB_USERNAME/simple-cms:dev
 
             - name: Deploy to server
               uses: appleboy/ssh-action@master
