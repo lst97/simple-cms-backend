@@ -32,6 +32,7 @@ jobs:
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   source: 'docker-compose.yml, Dockerfile'
                   target: '~/app'
+                  dns_server: '1.1.1.1'
 
             - name: Deploy to server
               uses: appleboy/ssh-action@master
