@@ -1,9 +1,7 @@
 version: '3.8'
 services:
     app:
-        build:
-            context: .
-            dockerfile: Dockerfile
+        image: ${DOCKER_HUB_USERNAME}/simple-cms:dev
         ports:
             - '1168:1168'
         depends_on:
