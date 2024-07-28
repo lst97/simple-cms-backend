@@ -8,6 +8,8 @@ services:
             - mongo
         environment:
             - MONGODB_URI=mongodb://mongo:27017/simple-cms
+        volumes:
+            - ~/app:/app:ro
 
     mongo:
         image: mongo:latest
