@@ -42,5 +42,5 @@ jobs:
                   script: |
                       mkdir -p ~/app
                       cd ~/app
-                      docker-compose pull
+                      docker pull $DOCKER_HUB_USERNAME/simple-cms-backend:dev
                       docker-compose up -d
