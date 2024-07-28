@@ -6,7 +6,7 @@ on:
 
 jobs:
     build-and-deploy:
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
 
         steps:
             - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
                       ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
               run: |
                   echo $DOCKER_HUB_ACCESS_TOKEN | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-                  docker buildx build --platform linux/arm64 -t $DOCKER_HUB_USERNAME/simple-cms-backend:dev .
+                  docker build -t $DOCKER_HUB_USERNAME/simple-cms-backend:dev .
                   docker push $DOCKER_HUB_USERNAME/simple-cms-backend:dev
 
             - name: Copy docker-compose.yml and Dockerfile to server
