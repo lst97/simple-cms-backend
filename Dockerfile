@@ -1,6 +1,8 @@
 # Use an official Node.js runtime as the base image
 FROM node:20.0.0
 
+COPY .env /usr/src/app/.env
+
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
@@ -12,13 +14,6 @@ RUN npm install
 
 # Copy the rest of the application code
 COPY . ./
-
-ARG BCRYPT_SALT_ROUNDS
-ARG ACCESS_TOKEN_SECRET
-
-# Create the .env file
-RUN echo "BCRYPT_SALT_ROUNDS=$BCRYPT_SALT_ROUNDS" > .env && \
-    echo "ACCESS_TOKEN_SECRET=$ACCESS_TOKEN_SECRET" >> .env
 
 # Expose the port the app runs on
 EXPOSE 1168
