@@ -11,9 +11,6 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Set DNS Server
-              run: echo "nameserver 1.1.1.1" | sudo tee -a /etc/resolv.conf
-
             - name: Build and push Docker images
               env:
                   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
