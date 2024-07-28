@@ -1,7 +1,7 @@
 version: '3.8'
 services:
     app:
-        image: lst97/simple-cms:dev
+        image: lst97/simple-cms-backend:dev
         ports:
             - '1168:1168'
         depends_on:
