@@ -21,15 +21,6 @@ jobs:
                   docker-compose build
                   docker-compose push
 
-            - name: Copy docker-compose.yml to server
-              uses: appleboy/scp-action@master
-              with:
-                  host: ${{ secrets.SERVER_HOST }}
-                  username: ${{ secrets.SERVER_USERNAME }}
-                  key: ${{ secrets.SERVER_SSH_KEY }}
-                  source: 'docker-compose.yml'
-                  target: '~/app'
-
             - name: Deploy to server
               uses: appleboy/ssh-action@master
               with:
@@ -38,6 +29,8 @@ jobs:
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
                       mkdir -p ~/app
+                      ls -a ../
+                      ls -a
                       cp docker-compose.yml ~/app/docker-compose.yml
                       cd ~/app
                       docker-compose pull
