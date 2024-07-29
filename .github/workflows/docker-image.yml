@@ -43,7 +43,7 @@ jobs:
                       echo "BCRYPT_SALT_ROUNDS=${{ secrets.BCRYPT_SALT_ROUNDS }}" > .env
                       echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
                       docker-compose pull
-                      docker cp ./.env app-simple-cms-backend-1:/usr/src/app
-                      docker run -d --link mongo:mongo simple-cms-backend-1
                       docker-compose down
                       docker-compose up -d
+                      docker cp ./.env app-simple-cms-backend-1:/usr/src/app
+                      docker run -d --link mongo:mongo simple-cms-backend-1
