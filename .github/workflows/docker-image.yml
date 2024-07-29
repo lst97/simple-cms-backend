@@ -42,6 +42,7 @@ jobs:
                       cd ~/app
                       echo "BCRYPT_SALT_ROUNDS=${{ secrets.BCRYPT_SALT_ROUNDS }}" > .env
                       echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
+                      echo "ENVIRONMENT=${{vars.ENVIRONMENT}}" >> .env
                       docker-compose pull
                       docker-compose down
                       docker-compose up -d

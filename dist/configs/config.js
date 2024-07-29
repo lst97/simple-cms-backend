@@ -53,7 +53,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.host = configData.host;
             this.apiVersion = configData.apiVersion;
             this.apiEndpoint = configData.apiEndpoint;
-            this.database = process.env.MONGODB_URI ?? configData.database;
+            this.database =
+                process.env.ENVIRONMENT === 'docker'
+                    ? 'mongodb://mongo:27017/simple-cms'
+                    : configData.database;
             this.certificates = configData.certificates;
             this.appIdentifier = configData.appIdentifier;
             this.environment = configData.environment;
