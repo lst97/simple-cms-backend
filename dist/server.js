@@ -1,31 +1,8 @@
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
 };
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
@@ -39,7 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "reflect-metadata", "express", "helmet", "cors", "./configs/config", "./configs/credentials", "https", "@lst97/common_response", "@lst97/express-common-middlewares", "inversify", "./inversify.config", "./routes/CollectionRoutes", "@lst97/common-errors", "dotenv", "path", "./routes/AuthenticateRoutes", "./routes/UserRoutes", "./configs/Passport.config", "./routes/EndpointRoutes", "./routes/StorageRoutes", "./routes/PostsRoutes"], factory);
+        define(["require", "exports", "reflect-metadata", "express", "helmet", "cors", "./configs/config", "./configs/credentials", "https", "@lst97/common_response", "@lst97/express-common-middlewares", "inversify", "./inversify.config", "./routes/CollectionRoutes", "@lst97/common-errors", "./routes/AuthenticateRoutes", "./routes/UserRoutes", "./configs/Passport.config", "./routes/EndpointRoutes", "./routes/StorageRoutes", "./routes/PostsRoutes"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -57,8 +34,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     const inversify_config_1 = __importDefault(require("./inversify.config"));
     const CollectionRoutes_1 = __importDefault(require("./routes/CollectionRoutes"));
     const common_errors_1 = require("@lst97/common-errors");
-    const dotenv = __importStar(require("dotenv"));
-    const path_1 = __importDefault(require("path"));
     const AuthenticateRoutes_1 = __importDefault(require("./routes/AuthenticateRoutes"));
     const UserRoutes_1 = __importDefault(require("./routes/UserRoutes"));
     const Passport_config_1 = __importDefault(require("./configs/Passport.config"));
@@ -81,7 +56,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             return this.app;
         }
         config() {
-            dotenv.config({ path: path_1.default.dirname(__dirname) + '/.env' });
             if (!process.env.ACCESS_TOKEN_SECRET) {
                 throw new common_errors_1.ServerInvalidEnvConfigError({
                     message: 'ACCESS_TOKEN_SECRET is not set in .env file.'

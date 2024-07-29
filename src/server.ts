@@ -19,8 +19,6 @@ import { injectable } from 'inversify';
 import container from './inversify.config';
 import CollectionRoutes from './routes/CollectionRoutes';
 import { ServerInvalidEnvConfigError } from '@lst97/common-errors';
-import * as dotenv from 'dotenv';
-import path from 'path';
 import IBaseRoutes from './routes/IBaseRoutes';
 import AuthenticateRoutes from './routes/AuthenticateRoutes';
 import UserRoutes from './routes/UserRoutes';
@@ -49,8 +47,6 @@ class App {
 	}
 
 	private config(): void {
-		dotenv.config({ path: path.dirname(__dirname) + '/.env' });
-
 		if (!process.env.ACCESS_TOKEN_SECRET) {
 			throw new ServerInvalidEnvConfigError({
 				message: 'ACCESS_TOKEN_SECRET is not set in .env file.'

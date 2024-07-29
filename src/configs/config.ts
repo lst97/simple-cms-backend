@@ -1,7 +1,7 @@
 import yaml from 'yaml';
 import * as fs from 'fs';
 import * as path from 'path';
-
+import * as dotenv from 'dotenv';
 export interface IAppConfig {
 	port: number;
 	host: string;
@@ -44,6 +44,10 @@ class AppConfig implements IAppConfig {
 	environment: string;
 
 	constructor(configData: any) {
+		dotenv.config({
+			path: path.dirname(path.dirname(path.dirname(__dirname))) + '/.env'
+		});
+
 		this.port = configData.port;
 		this.host = configData.host;
 		this.apiVersion = configData.apiVersion;
