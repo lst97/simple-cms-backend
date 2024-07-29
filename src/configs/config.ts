@@ -48,7 +48,7 @@ class AppConfig implements IAppConfig {
 		this.host = configData.host;
 		this.apiVersion = configData.apiVersion;
 		this.apiEndpoint = configData.apiEndpoint;
-		this.database = process.env.MONGODB_URI ?? configData.database;
+		this.database = configData.database;
 		this.certificates = configData.certificates;
 		this.appIdentifier = configData.appIdentifier;
 		this.environment = configData.environment;
