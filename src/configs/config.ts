@@ -48,7 +48,7 @@ class AppConfig implements IAppConfig {
 		this.host = configData.host;
 		this.apiVersion = configData.apiVersion;
 		this.apiEndpoint = configData.apiEndpoint;
-		this.database = configData.database;
+		this.database = process.env.MONGODB_URI ?? configData.database;
 		this.certificates = configData.certificates;
 		this.appIdentifier = configData.appIdentifier;
 		this.environment = configData.environment;
@@ -57,7 +57,7 @@ class AppConfig implements IAppConfig {
 }
 
 const configPath = path.resolve(__dirname, 'app_config.yml');
-const configData = yaml.parse(fs.readFileSync(configPath, 'utf8')) as any; // 'any' for typing flexibility
+const configData = yaml.parse(fs.readFileSync(configPath, 'utf8'));
 
 const appConfig = new AppConfig(configData);
 

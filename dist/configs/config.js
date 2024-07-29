@@ -53,7 +53,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.host = configData.host;
             this.apiVersion = configData.apiVersion;
             this.apiEndpoint = configData.apiEndpoint;
-            this.database = configData.database;
+            this.database = process.env.MONGODB_URI ?? configData.database;
             this.certificates = configData.certificates;
             this.appIdentifier = configData.appIdentifier;
             this.environment = configData.environment;
@@ -61,7 +61,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         }
     }
     const configPath = path.resolve(__dirname, 'app_config.yml');
-    const configData = yaml_1.default.parse(fs.readFileSync(configPath, 'utf8')); // 'any' for typing flexibility
+    const configData = yaml_1.default.parse(fs.readFileSync(configPath, 'utf8'));
     const appConfig = new AppConfig(configData);
     exports.default = appConfig;
 });
