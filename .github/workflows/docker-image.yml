@@ -46,4 +46,4 @@ jobs:
                       docker-compose down
                       docker-compose up -d
                       docker cp ./.env app-simple-cms-backend-1:/usr/src/app
-                      docker run -d --link mongo:mongo simple-cms-backend:dev
+                      docker run -d --link app-mongo-1:mongo app-simple-cms-backend-1
