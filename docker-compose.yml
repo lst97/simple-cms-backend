@@ -1,12 +1,4 @@
 version: '3.8'
-networks:
-    app_network:
-        driver: bridge
-        ipam:
-            config:
-                - subnet: 172.20.0.0/16
-                  gateway: 172.20.0.1
-
 services:
     simple-cms-backend:
         image: lst97/simple-cms-backend:dev
@@ -17,8 +9,8 @@ services:
         volumes:
             - ~/app:/app:ro
         networks:
-            app_network:
-                ipv4_address: 172.20.0.2
+            - app_network
+
         environment:
             - MONGODB_URI=mongodb://mongo:27017/simple-cms
 
@@ -29,8 +21,10 @@ services:
         volumes:
             - mongodb_data:/data/db
         networks:
-            app_network:
-                ipv4_address: 172.20.0.2
+            - app_network
+
+networks:
+    app_network:
 
 volumes:
     mongodb_data:
