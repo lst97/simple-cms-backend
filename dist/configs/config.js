@@ -30,7 +30,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "yaml", "fs", "path", "dotenv"], factory);
+        define(["require", "exports", "yaml", "fs", "path", "../utils/FileChecker", "deasync"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -38,7 +38,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     const yaml_1 = __importDefault(require("yaml"));
     const fs = __importStar(require("fs"));
     const path = __importStar(require("path"));
-    const dotenv = __importStar(require("dotenv"));
+    const FileChecker_1 = __importDefault(require("../utils/FileChecker"));
+    const deasync_1 = __importDefault(require("deasync"));
     class AppConfig {
         port;
         host;
@@ -50,9 +51,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         appIdentifier;
         environment;
         constructor(configData) {
-            dotenv.config({
-                path: path.dirname(path.dirname(path.dirname(__dirname))) + '/.env'
-            });
+            const checker = new FileChecker_1.default();
+            let done = false;
+            checker.checkEnvFile().then(() => (done = true));
+            deasync_1.default.loopWhile(() => !done);
             this.port = configData.port;
             this.host = configData.host;
             this.apiVersion = configData.apiVersion;

@@ -2,6 +2,8 @@ import yaml from 'yaml';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import EnvFileChecker from '../utils/FileChecker';
+import deasync from 'deasync';
 export interface IAppConfig {
 	port: number;
 	host: string;
@@ -44,9 +46,11 @@ class AppConfig implements IAppConfig {
 	environment: string;
 
 	constructor(configData: any) {
-		dotenv.config({
-			path: path.dirname(path.dirname(path.dirname(__dirname))) + '/.env'
-		});
+		const checker = new EnvFileChecker();
+
+		let done = false;
+		checker.checkEnvFile().then(() => (done = true));
+		deasync.loopWhile(() => !done);
 
 		this.port = configData.port;
 		this.host = configData.host;
