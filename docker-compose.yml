@@ -10,7 +10,6 @@ services:
             - ~/app:/app:ro
         networks:
             - app_network
-
         environment:
             - MONGODB_URI=mongodb://mongo:27017/simple-cms
 
