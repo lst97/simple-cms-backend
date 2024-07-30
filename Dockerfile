@@ -10,8 +10,13 @@ COPY package*.json ./
 # Install the application dependencies
 RUN npm install
 
+RUN npm install -g tsc
+
 # Copy the rest of the application code
 COPY . ./
+
+# Build the application
+RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 1168
