@@ -10,7 +10,7 @@ COPY package*.json ./
 # Install the application dependencies
 RUN npm install
 
-RUN npm run build
+RUN cp src/configs/app_config.yml dist/configs/app_config.yml && tsc
 
 # Copy the rest of the application code
 COPY . ./
