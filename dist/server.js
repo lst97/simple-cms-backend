@@ -70,9 +70,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.appConfig.appIdentifier.name;
             this.app.use((0, helmet_1.default)());
             this.app.use((0, cors_1.default)({
-                origin: '*',
-                credentials: true,
-                optionsSuccessStatus: 200
+                origin: ['http://localhost:5173'],
+                methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
+                allowedHeaders: ['Content-Type', 'Authorization'], // Allow
+                credentials: true // Allow credentials (cookies, authorization headers)
             }));
             this.app.use(express_1.default.json());
             this.app.use(Passport_config_1.default.instance.init());

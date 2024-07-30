@@ -65,9 +65,10 @@ class App {
 		this.app.use(helmet());
 		this.app.use(
 			cors({
-				origin: '*',
-				credentials: true,
-				optionsSuccessStatus: 200
+				origin: ['http://localhost:5173'],
+				methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
+				allowedHeaders: ['Content-Type', 'Authorization'], // Allow
+				credentials: true // Allow credentials (cookies, authorization headers)
 			})
 		);
 		this.app.use(express.json());
