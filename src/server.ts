@@ -125,16 +125,23 @@ class App {
 	}
 
 	public listen(port: number, callback: () => void): void {
-		if (this.appConfig.environment === 'production') {
-			const httpsServer = https.createServer(
-				new Credentials().tls,
-				this.app
-			);
-			httpsServer.listen(`${this.appConfig.port}`, callback);
-		} else if (this.appConfig.environment === 'development') {
-			this.app.listen(port, callback);
-		} else {
-			throw new Error('Environment not set');
+		switch (this.appConfig.environment) {
+			case 'production': {
+				const httpsServer = https.createServer(
+					new Credentials().tls,
+					this.app
+				);
+				httpsServer.listen(port, callback);
+				break;
+			}
+			case 'local': // development
+				this.app.listen(port, callback);
+				break;
+			case 'docker': // testing
+				this.app.listen(port, callback);
+				break;
+			default:
+				throw new Error('Environment not set');
 		}
 	}
 }

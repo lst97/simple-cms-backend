@@ -90,15 +90,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(StorageRoutes_1.default).routers);
         }
         listen(port, callback) {
-            if (this.appConfig.environment === 'production') {
-                const httpsServer = https_1.default.createServer(new credentials_1.default().tls, this.app);
-                httpsServer.listen(`${this.appConfig.port}`, callback);
-            }
-            else if (this.appConfig.environment === 'development') {
-                this.app.listen(port, callback);
-            }
-            else {
-                throw new Error('Environment not set');
+            switch (this.appConfig.environment) {
+                case 'production': {
+                    const httpsServer = https_1.default.createServer(new credentials_1.default().tls, this.app);
+                    httpsServer.listen(port, callback);
+                    break;
+                }
+                case 'local': // development
+                    this.app.listen(port, callback);
+                    break;
+                case 'docker': // testing
+                    this.app.listen(port, callback);
+                    break;
+                default:
+                    throw new Error('Environment not set');
             }
         }
     };
