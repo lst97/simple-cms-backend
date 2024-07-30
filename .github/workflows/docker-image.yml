@@ -46,4 +46,4 @@ jobs:
                       docker-compose pull
                       docker-compose down
                       docker-compose up -d
-                      docker cp ./.env app-simple-cms-backend-1:/usr/src/app
+                      docker cp ./.env simple-cms-backend-1:/usr/src/app
