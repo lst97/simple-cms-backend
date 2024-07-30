@@ -7,14 +7,8 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-COPY src/configs/app_config.yml ./dist/configs/app_config.yml 
-
 # Install the application dependencies
 RUN npm install
-
-ENV PATH=/usr/local/lib/node_modules/typescript/bin:$PATH
-
-RUN tsc
 
 # Copy the rest of the application code
 COPY . ./
