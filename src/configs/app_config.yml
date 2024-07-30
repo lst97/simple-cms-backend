@@ -4,12 +4,17 @@ protocol: http
 apiVersion: v1
 apiEndpoint: /api
 database:
-    mongodbConnectionString: mongodb://0.0.0.0:27017/simple-cms
-    sqlite3ConnectionString: ./database/simple-cms.db
+    local:
+        mongodbConnectionString: mongodb://0.0.0.0:27017/simple-cms
+        sqlite3ConnectionString: ./database/simple-cms.db
+    docker:
+        dockerMongoDbConnectionString: mongodb://mongo:27017/simple-cms
+        sqlite3ConnectionString: ./database/simple-cms.db
+
 certificates:
     privateKey: /etc/letsencrypt/live/lst97.tplinkdns.com/privkey.pem
     certificate: /etc/letsencrypt/live/lst97.tplinkdns.com/cert.pem
     ca: /etc/letsencrypt/live/lst97.tplinkdns.com/chain.pem
 appIdentifier:
     name: simple_cms
-environment: development
+environment: local

@@ -46,22 +46,18 @@ class AppConfig implements IAppConfig {
 	environment: string;
 
 	private constructor(configData: any) {
+		this.environment = process.env.ENVIRONMENT ?? configData.environment;
+
 		this.port = configData.port;
 		this.host = configData.host;
 		this.apiVersion = configData.apiVersion;
 		this.apiEndpoint = configData.apiEndpoint;
 		this.database =
-			process.env.ENVIRONMENT === 'docker'
-				? {
-						mongodbConnectionString:
-							'mongodb://mongo:27017/simple-cms',
-						sqlite3ConnectionString:
-							configData.database.sqlite3ConnectionString
-				  }
-				: configData.database;
+			this.environment === 'docker'
+				? configData.database.docker
+				: configData.database.local;
 		this.certificates = configData.certificates;
 		this.appIdentifier = configData.appIdentifier;
-		this.environment = configData.environment;
 		this.protocol = configData.protocol;
 	}
 

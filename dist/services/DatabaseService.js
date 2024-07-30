@@ -88,7 +88,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         _appConfig = config_1.default.instance;
         constructor() {
             try {
-                console.log(this._appConfig.database.mongodbConnectionString);
                 this._mongodb_client = new mongodb_1.MongoClient(this._appConfig.database.mongodbConnectionString);
                 this._sqlite3_client = new sqlite3_1.default.Database(this._appConfig.database.sqlite3ConnectionString, (error) => {
                     if (error) {

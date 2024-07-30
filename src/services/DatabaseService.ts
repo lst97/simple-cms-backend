@@ -78,7 +78,6 @@ export class DatabaseService implements IDatabaseService {
 
 	constructor() {
 		try {
-			console.log(this._appConfig.database.mongodbConnectionString);
 			this._mongodb_client = new MongoClient(
 				this._appConfig.database.mongodbConnectionString
 			);
