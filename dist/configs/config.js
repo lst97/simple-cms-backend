@@ -21,26 +21,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 (function (factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
         var v = factory(require, exports);
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "yaml", "fs", "path", "../utils/FileChecker", "deasync"], factory);
+        define(["require", "exports", "fs", "path", "yaml"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const yaml_1 = __importDefault(require("yaml"));
     const fs = __importStar(require("fs"));
     const path = __importStar(require("path"));
-    const FileChecker_1 = __importDefault(require("../utils/FileChecker"));
-    const deasync_1 = __importDefault(require("deasync"));
+    const yaml = __importStar(require("yaml"));
     class AppConfig {
+        static _instance = null;
         port;
         host;
         protocol;
@@ -51,26 +47,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         appIdentifier;
         environment;
         constructor(configData) {
-            const checker = new FileChecker_1.default();
-            let done = false;
-            checker.checkEnvFile().then(() => (done = true));
-            deasync_1.default.loopWhile(() => !done);
             this.port = configData.port;
             this.host = configData.host;
             this.apiVersion = configData.apiVersion;
             this.apiEndpoint = configData.apiEndpoint;
             this.database =
                 process.env.ENVIRONMENT === 'docker'
-                    ? 'mongodb://mongo:27017/simple-cms'
+                    ? {
+                        mongodbConnectionString: 'mongodb://mongo:27017/simple-cms',
+                        sqlite3ConnectionString: configData.database.sqlite3ConnectionString
+                    }
                     : configData.database;
             this.certificates = configData.certificates;
             this.appIdentifier = configData.appIdentifier;
             this.environment = configData.environment;
             this.protocol = configData.protocol;
         }
+        static get instance() {
+            if (!AppConfig._instance) {
+                const configPath = path.resolve(__dirname, 'app_config.yml');
+                const configData = yaml.parse(fs.readFileSync(configPath, 'utf8'));
+                AppConfig._instance = new AppConfig(configData);
+            }
+            return AppConfig._instance;
+        }
     }
-    const configPath = path.resolve(__dirname, 'app_config.yml');
-    const configData = yaml_1.default.parse(fs.readFileSync(configPath, 'utf8'));
-    const appConfig = new AppConfig(configData);
-    exports.default = appConfig;
+    exports.default = AppConfig;
 });

@@ -8,7 +8,7 @@ import {
 	ErrorHandlerService,
 	IErrorHandlerService
 } from '@lst97/common_response';
-import appConfig from '../configs/config';
+import AppConfig, { IAppConfig } from '../configs/config';
 
 const closeMongoConnection = async (client: MongoClient): Promise<void> => {
 	try {
@@ -74,27 +74,28 @@ export interface IDatabaseService {
 export class DatabaseService implements IDatabaseService {
 	private _mongodb_client: MongoClient;
 	private _sqlite3_client: any;
+	private _appConfig: IAppConfig = AppConfig.instance;
 
 	constructor() {
 		try {
-			console.log(appConfig.database.mongodbConnectionString);
+			console.log(this._appConfig.database.mongodbConnectionString);
 			this._mongodb_client = new MongoClient(
-				appConfig.database.mongodbConnectionString
+				this._appConfig.database.mongodbConnectionString
 			);
 			this._sqlite3_client = new sqlite3.Database(
-				appConfig.database.sqlite3ConnectionString,
+				this._appConfig.database.sqlite3ConnectionString,
 				(error) => {
 					if (error) {
 						throw error;
 					}
 				}
 			);
-			mongoose.connect(appConfig.database.mongodbConnectionString);
+			mongoose.connect(this._appConfig.database.mongodbConnectionString);
 			console.log(
-				`SQLite3 database connection established at ${appConfig.database.sqlite3ConnectionString}`
+				`SQLite3 database connection established at ${this._appConfig.database.sqlite3ConnectionString}`
 			);
 			console.log(
-				`Connected to MongoDB ${appConfig.database.mongodbConnectionString}`
+				`Connected to MongoDB ${this._appConfig.database.mongodbConnectionString}`
 			);
 			addProcessExitListener(this._mongodb_client, this._sqlite3_client);
 		} catch (error) {

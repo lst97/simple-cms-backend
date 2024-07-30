@@ -15,10 +15,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     const fs_1 = __importDefault(require("fs"));
     const config_1 = __importDefault(require("./config"));
     class Credentials {
+        _appConfig = config_1.default.instance;
         tls = {
-            key: fs_1.default.readFileSync(config_1.default.certificates.privateKey, 'utf8'),
-            cert: fs_1.default.readFileSync(config_1.default.certificates.certificate, 'utf8'),
-            ca: fs_1.default.readFileSync(config_1.default.certificates.ca, 'utf8')
+            key: fs_1.default.readFileSync(this._appConfig.certificates.privateKey, 'utf8'),
+            cert: fs_1.default.readFileSync(this._appConfig.certificates.certificate, 'utf8'),
+            ca: fs_1.default.readFileSync(this._appConfig.certificates.ca, 'utf8')
         };
     }
     exports.default = Credentials;

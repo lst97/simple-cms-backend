@@ -85,18 +85,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     let DatabaseService = class DatabaseService {
         _mongodb_client;
         _sqlite3_client;
+        _appConfig = config_1.default.instance;
         constructor() {
             try {
-                console.log(config_1.default.database.mongodbConnectionString);
-                this._mongodb_client = new mongodb_1.MongoClient(config_1.default.database.mongodbConnectionString);
-                this._sqlite3_client = new sqlite3_1.default.Database(config_1.default.database.sqlite3ConnectionString, (error) => {
+                console.log(this._appConfig.database.mongodbConnectionString);
+                this._mongodb_client = new mongodb_1.MongoClient(this._appConfig.database.mongodbConnectionString);
+                this._sqlite3_client = new sqlite3_1.default.Database(this._appConfig.database.sqlite3ConnectionString, (error) => {
                     if (error) {
                         throw error;
                     }
                 });
-                typegoose_1.mongoose.connect(config_1.default.database.mongodbConnectionString);
-                console.log(`SQLite3 database connection established at ${config_1.default.database.sqlite3ConnectionString}`);
-                console.log(`Connected to MongoDB ${config_1.default.database.mongodbConnectionString}`);
+                typegoose_1.mongoose.connect(this._appConfig.database.mongodbConnectionString);
+                console.log(`SQLite3 database connection established at ${this._appConfig.database.sqlite3ConnectionString}`);
+                console.log(`Connected to MongoDB ${this._appConfig.database.mongodbConnectionString}`);
                 addProcessExitListener(this._mongodb_client, this._sqlite3_client);
             }
             catch (error) {

@@ -10,8 +10,6 @@ services:
             - mongo
         volumes:
             - ~/app:/app:ro
-        environment:
-            - MONGODB_URI=mongodb://mongo:27017/simple-cms
         networks:
             - app-network
 

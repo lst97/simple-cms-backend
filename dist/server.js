@@ -16,7 +16,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "reflect-metadata", "express", "helmet", "cors", "./configs/config", "./configs/credentials", "https", "@lst97/common_response", "@lst97/express-common-middlewares", "inversify", "./inversify.config", "./routes/CollectionRoutes", "@lst97/common-errors", "./routes/AuthenticateRoutes", "./routes/UserRoutes", "./configs/Passport.config", "./routes/EndpointRoutes", "./routes/StorageRoutes", "./routes/PostsRoutes"], factory);
+        define(["require", "exports", "reflect-metadata", "express", "helmet", "cors", "./configs/credentials", "https", "@lst97/common_response", "@lst97/express-common-middlewares", "inversify", "./inversify.config", "./routes/CollectionRoutes", "@lst97/common-errors", "./routes/AuthenticateRoutes", "./routes/UserRoutes", "./configs/Passport.config", "./routes/EndpointRoutes", "./routes/StorageRoutes", "./routes/PostsRoutes", "./configs/config"], factory);
     }
 })(function (require, exports) {
     "use strict";
@@ -25,7 +25,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     const express_1 = __importDefault(require("express"));
     const helmet_1 = __importDefault(require("helmet"));
     const cors_1 = __importDefault(require("cors"));
-    const config_1 = __importDefault(require("./configs/config"));
     const credentials_1 = __importDefault(require("./configs/credentials"));
     const https_1 = __importDefault(require("https"));
     const common_response_1 = require("@lst97/common_response");
@@ -40,15 +39,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     const EndpointRoutes_1 = __importDefault(require("./routes/EndpointRoutes"));
     const StorageRoutes_1 = __importDefault(require("./routes/StorageRoutes"));
     const PostsRoutes_1 = __importDefault(require("./routes/PostsRoutes"));
+    const config_1 = __importDefault(require("./configs/config"));
     let App = class App {
         app;
-        appConfig;
+        appConfig; // init in config()
         get Config() {
             return this.appConfig;
         }
         constructor() {
             this.app = (0, express_1.default)();
-            this.appConfig = config_1.default;
             this.config();
             this.routes();
         }
@@ -56,18 +55,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             return this.app;
         }
         config() {
+            this.appConfig = config_1.default.instance;
             if (!process.env.ACCESS_TOKEN_SECRET) {
                 throw new common_errors_1.ServerInvalidEnvConfigError({
                     message: 'ACCESS_TOKEN_SECRET is not set in .env file.'
                 });
             }
             common_response_1.Config.instance.idIdentifier =
-                config_1.default.appIdentifier.name;
+                this.appConfig.appIdentifier.name;
             common_response_1.Config.instance.requestIdName = 'requestId';
             common_response_1.Config.instance.traceIdName = 'traceId';
             express_common_middlewares_1.RequestHeaderMiddlewareConfig.instance.requestIdName = 'requestId';
             express_common_middlewares_1.RequestHeaderMiddlewareConfig.instance.appIdentifier =
-                config_1.default.appIdentifier.name;
+                this.appConfig.appIdentifier.name;
             this.app.use((0, helmet_1.default)());
             this.app.use((0, cors_1.default)({
                 origin: '*',
@@ -82,17 +82,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
             this.app.use(inversify_config_1.default.get(express_common_middlewares_1.ResponseLoggerMiddlewareService).responseLogger);
         }
         routes() {
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(CollectionRoutes_1.default).routers);
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(PostsRoutes_1.default).routers);
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(AuthenticateRoutes_1.default).routers);
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(UserRoutes_1.default).routers);
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(EndpointRoutes_1.default).routers);
-            this.app.use(`${config_1.default.apiEndpoint}/${config_1.default.apiVersion}`, inversify_config_1.default.get(StorageRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(CollectionRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(PostsRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(AuthenticateRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(UserRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(EndpointRoutes_1.default).routers);
+            this.app.use(`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`, inversify_config_1.default.get(StorageRoutes_1.default).routers);
         }
         listen(port, callback) {
             if (this.appConfig.environment === 'production') {
                 const httpsServer = https_1.default.createServer(new credentials_1.default().tls, this.app);
-                httpsServer.listen(`${config_1.default.port}`, callback);
+                httpsServer.listen(`${this.appConfig.port}`, callback);
             }
             else if (this.appConfig.environment === 'development') {
                 this.app.listen(port, callback);

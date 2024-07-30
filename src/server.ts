@@ -3,7 +3,6 @@ import 'reflect-metadata';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import appConfig, { IAppConfig } from './configs/config';
 import Credentials from './configs/credentials';
 import https from 'https';
 import { Config as CommonResponseConfig } from '@lst97/common_response';
@@ -26,10 +25,11 @@ import PassportConfig from './configs/Passport.config';
 import EndpointRoutes from './routes/EndpointRoutes';
 import StorageRoutes from './routes/StorageRoutes';
 import PostsRoutes from './routes/PostsRoutes';
+import AppConfig, { IAppConfig } from './configs/config';
 @injectable()
 class App {
 	private app: express.Application;
-	private appConfig: IAppConfig;
+	private appConfig!: IAppConfig; // init in config()
 
 	public get Config(): IAppConfig {
 		return this.appConfig;
@@ -37,7 +37,6 @@ class App {
 
 	constructor() {
 		this.app = express();
-		this.appConfig = appConfig;
 		this.config();
 		this.routes();
 	}
@@ -47,6 +46,8 @@ class App {
 	}
 
 	private config(): void {
+		this.appConfig = AppConfig.instance;
+
 		if (!process.env.ACCESS_TOKEN_SECRET) {
 			throw new ServerInvalidEnvConfigError({
 				message: 'ACCESS_TOKEN_SECRET is not set in .env file.'
@@ -54,12 +55,12 @@ class App {
 		}
 
 		CommonResponseConfig.instance.idIdentifier =
-			appConfig.appIdentifier.name;
+			this.appConfig.appIdentifier.name;
 		CommonResponseConfig.instance.requestIdName = 'requestId';
 		CommonResponseConfig.instance.traceIdName = 'traceId';
 		RequestHeaderMiddlewareConfig.instance.requestIdName = 'requestId';
 		RequestHeaderMiddlewareConfig.instance.appIdentifier =
-			appConfig.appIdentifier.name;
+			this.appConfig.appIdentifier.name;
 
 		this.app.use(helmet());
 		this.app.use(
@@ -93,32 +94,32 @@ class App {
 
 	private routes(): void {
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(CollectionRoutes).routers
 		);
 
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(PostsRoutes).routers
 		);
 
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(AuthenticateRoutes).routers
 		);
 
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(UserRoutes).routers
 		);
 
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(EndpointRoutes).routers
 		);
 
 		this.app.use(
-			`${appConfig.apiEndpoint}/${appConfig.apiVersion}`,
+			`${this.appConfig.apiEndpoint}/${this.appConfig.apiVersion}`,
 			container.get<IBaseRoutes>(StorageRoutes).routers
 		);
 	}
@@ -129,7 +130,7 @@ class App {
 				new Credentials().tls,
 				this.app
 			);
-			httpsServer.listen(`${appConfig.port}`, callback);
+			httpsServer.listen(`${this.appConfig.port}`, callback);
 		} else if (this.appConfig.environment === 'development') {
 			this.app.listen(port, callback);
 		} else {

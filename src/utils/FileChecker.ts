@@ -18,11 +18,7 @@ class EnvFileChecker {
 					if (attempts < this.maxAttempts) {
 						setTimeout(checkFile, this.delayMs);
 					} else {
-						reject(
-							new Error(
-								'.env file not found after maximum attempts'
-							)
-						);
+						reject(new Error('.env file not found'));
 					}
 				}
 			};
