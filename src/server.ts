@@ -65,7 +65,8 @@ class App {
 		this.app.use(helmet());
 		this.app.use(
 			cors({
-				origin: '*',
+				origin: true,
+				credentials: true,
 				allowedHeaders: ['Content-Type', 'Authorization'],
 				methods: ['GET', 'POST', 'PUT', 'DELETE'],
 				optionsSuccessStatus: 200

@@ -70,7 +70,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
                 this.appConfig.appIdentifier.name;
             this.app.use((0, helmet_1.default)());
             this.app.use((0, cors_1.default)({
-                origin: '*',
+                origin: true,
+                credentials: true,
                 allowedHeaders: ['Content-Type', 'Authorization'],
                 methods: ['GET', 'POST', 'PUT', 'DELETE'],
                 optionsSuccessStatus: 200
