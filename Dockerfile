@@ -12,7 +12,7 @@ COPY src/configs/app_config.yml ./dist/configs/app_config.yml
 # Install the application dependencies
 RUN npm install
 
-ENV PATH /usr/local/lib/node_modules/typescript/bin:$PATH
+ENV PATH=/usr/local/lib/node_modules/typescript/bin:$PATH
 
 RUN tsc
 
