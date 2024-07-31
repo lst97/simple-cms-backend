@@ -9,7 +9,7 @@ services:
         depends_on:
             - mongo
         volumes:
-            - ~/app:/app:ro
+            - ~/app/simple-cms-backend:/app:ro
         networks:
             - app-network
 
